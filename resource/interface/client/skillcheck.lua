@@ -8,6 +8,7 @@
 
 ---@type promise?
 local skillcheck
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---@alias SkillCheckDifficulity 'easy' | 'medium' | 'hard' | { areaSize: number, speedMultiplier: number }
 
@@ -15,6 +16,8 @@ local skillcheck
 ---@param inputs string[]?
 ---@return boolean?
 function lib.skillCheck(difficulty, inputs)
+    if lation_ui then return exports.lation_ui:skillCheck(nil, difficulty, inputs) end
+
     if skillcheck then return end
     skillcheck = promise:new()
 
@@ -31,6 +34,8 @@ function lib.skillCheck(difficulty, inputs)
 end
 
 function lib.cancelSkillCheck()
+    if lation_ui then return exports.lation_ui:cancelSkillCheck() end
+
     if not skillcheck then
         error('No skillCheck is active')
     end
@@ -40,6 +45,8 @@ end
 
 ---@return boolean
 function lib.skillCheckActive()
+    if lation_ui then return exports.lation_ui:skillCheckActive() end
+
     return skillcheck ~= nil
 end
 

@@ -26,11 +26,17 @@
 ---@field sound? { bank?: string, set: string, name: string }
 
 local settings = require 'resource.settings'
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---`client`
 ---@param data NotifyProps
 ---@diagnostic disable-next-line: duplicate-set-field
 function lib.notify(data)
+    if lation_ui then
+        if data.type == 'inform' then data.type = 'info' end
+        return exports.lation_ui:notify(data)
+    end
+
     local sound = settings.notification_audio and data.sound
     data.sound = nil
     data.position = data.position or settings.notification_position

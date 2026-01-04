@@ -9,6 +9,7 @@
 ---@type promise?
 local alert = nil
 local alertId = 0
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---@class AlertDialogProps
 ---@field header string;
@@ -23,6 +24,8 @@ local alertId = 0
 ---@param timeout? number Force the window to timeout after `x` milliseconds.
 ---@return 'cancel' | 'confirm' | nil
 function lib.alertDialog(data, timeout)
+    if lation_ui then return exports.lation_ui:alert(data) end
+
     if alert then return end
 
     local id = alertId + 1
@@ -46,6 +49,8 @@ end
 
 ---@param reason? string An optional reason for the window to be closed.
 function lib.closeAlertDialog(reason)
+    if lation_ui then return exports.lation_ui:closeAlert() end
+
     if not alert then return end
 
     lib.resetNuiFocus()

@@ -25,6 +25,7 @@
 ---@field [string] any
 
 local isOpen = false
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---@type table<string, RadialMenuProps>
 local menus = {}
@@ -113,6 +114,8 @@ end
 ---Registers a radial sub menu with predefined options.
 ---@param radial RadialMenuProps
 function lib.registerRadial(radial)
+    if lation_ui then return exports.lation_ui:registerRadial(radial) end
+
     menus[radial.id] = radial
     radial.resource = GetInvokingResource()
 
@@ -122,10 +125,14 @@ function lib.registerRadial(radial)
 end
 
 function lib.getCurrentRadialId()
+    if lation_ui then return exports.lation_ui:getCurrentRadialId() end
+
     return currentRadial and currentRadial.id
 end
 
 function lib.hideRadial()
+    if lation_ui then return exports.lation_ui:hideRadial() end
+
     if not isOpen then return end
 
     SendNUIMessage({
@@ -143,6 +150,8 @@ end
 ---Registers an item or array of items in the global radial menu.
 ---@param items RadialMenuItem | RadialMenuItem[]
 function lib.addRadialItem(items)
+    if lation_ui then return exports.lation_ui:addRadialItem(items) end
+
     local menuSize = #menuItems
     local invokingResource = GetInvokingResource()
 
@@ -178,6 +187,8 @@ end
 ---Removes an item from the global radial menu with the given id.
 ---@param id string
 function lib.removeRadialItem(id)
+    if lation_ui then return exports.lation_ui:removeRadialItem(id) end
+
     local menuItem
 
     for i = 1, #menuItems do
@@ -196,6 +207,8 @@ end
 
 ---Removes all items from the global radial menu.
 function lib.clearRadialItems()
+    if lation_ui then return exports.lation_ui:clearRadialItems() end
+
     table.wipe(menuItems)
 
     if isOpen then
@@ -297,6 +310,8 @@ local isDisabled = false
 ---Disallow players from opening the radial menu.
 ---@param state boolean
 function lib.disableRadial(state)
+    if lation_ui then return exports.lation_ui:disableRadial(state) end
+
     isDisabled = state
 
     if isOpen and state then

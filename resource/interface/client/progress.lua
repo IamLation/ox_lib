@@ -12,6 +12,7 @@ local DisablePlayerFiring = DisablePlayerFiring
 local playerState = LocalPlayer.state
 local createdProps = {}
 local maxProps = GetConvarInt('ox:progressPropLimit', 2)
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---@class ProgressPropProps
 ---@field model string
@@ -167,6 +168,8 @@ end
 ---@param data ProgressProps
 ---@return boolean?
 function lib.progressBar(data)
+    if lation_ui then return exports.lation_ui:progressBar(data) end
+
     while progress ~= nil do Wait(0) end
 
     if not interruptProgress(data) then
@@ -185,6 +188,8 @@ end
 ---@param data ProgressProps
 ---@return boolean?
 function lib.progressCircle(data)
+    if lation_ui then return exports.lation_ui:progressBar(data) end
+
     while progress ~= nil do Wait(0) end
 
     if not interruptProgress(data) then
@@ -202,6 +207,8 @@ function lib.progressCircle(data)
 end
 
 function lib.cancelProgress()
+    if lation_ui then return exports.lation_ui:cancelProgress() end
+
     if not progress then
         error('No progress bar is active')
     end
@@ -211,6 +218,8 @@ end
 
 ---@return boolean
 function lib.progressActive()
+    if lation_ui then return exports.lation_ui:progressActive() end
+
     return progress and true
 end
 

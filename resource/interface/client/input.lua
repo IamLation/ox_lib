@@ -7,6 +7,7 @@
 ]]
 
 local input
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---@class InputDialogRowProps
 ---@field type 'input' | 'number' | 'checkbox' | 'select' | 'slider' | 'multi-select' | 'date' | 'date-range' | 'time' | 'textarea' | 'color'
@@ -42,6 +43,31 @@ local input
 ---@param options InputDialogOptionsProps[]?
 ---@return string[] | number[] | boolean[] | nil
 function lib.inputDialog(heading, rows, options)
+    if lation_ui then
+        local data = { title = heading }
+
+        data.options = type(rows) == 'table' and rows or { rows }
+
+        for i, option in ipairs(data.options) do
+            if type(option) == 'string' then
+                data.options[i] = { type = 'input', label = option }
+            elseif type(option) == 'table' and not option.type then
+                option.type = 'input'
+            end
+        end
+
+        if type(options) == 'table' then
+            for k, v in pairs(options) do
+                data[k] = v
+            end
+            if options.allowCancel ~= nil then
+                data.cancel = options.allowCancel
+            end
+        end
+
+        return exports.lation_ui:input(data)
+    end
+
     if input then return end
     input = promise.new()
 
@@ -66,6 +92,8 @@ function lib.inputDialog(heading, rows, options)
 end
 
 function lib.closeInputDialog()
+    if lation_ui then return exports.lation_ui:closeInput() end
+
     if not input then return end
 
     lib.resetNuiFocus()

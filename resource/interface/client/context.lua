@@ -8,6 +8,7 @@
 
 local contextMenus = {}
 local openContextMenu = nil
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---@class ContextMenuItem
 ---@field title? string
@@ -39,6 +40,8 @@ local openContextMenu = nil
 ---@field options { [string]: ContextMenuItem } | ContextMenuArrayItem[]
 
 local function closeContext(_, cb, onExit)
+    if lation_ui then return exports.lation_ui:hideMenu() end
+
     if cb then cb(1) end
 
     lib.resetNuiFocus()
@@ -54,6 +57,8 @@ end
 
 ---@param id string
 function lib.showContext(id)
+    if lation_ui then return exports.lation_ui:showMenu(id) end
+
     if not contextMenus[id] then error('No context menu of such id found.') end
 
     local data = contextMenus[id]
@@ -74,6 +79,8 @@ end
 
 ---@param context ContextMenuProps | ContextMenuProps[]
 function lib.registerContext(context)
+    if lation_ui then return exports.lation_ui:registerMenu(context) end
+
     for k, v in pairs(context) do
         if type(k) == 'number' then
             contextMenus[v.id] = v
@@ -85,7 +92,11 @@ function lib.registerContext(context)
 end
 
 ---@return string?
-function lib.getOpenContextMenu() return openContextMenu end
+function lib.getOpenContextMenu()
+    if lation_ui then return exports.lation_ui:getOpenMenu() end
+
+    return openContextMenu
+end
 
 ---@param onExit boolean?
 function lib.hideContext(onExit) closeContext(nil, nil, onExit) end

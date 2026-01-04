@@ -15,10 +15,20 @@
 
 local isOpen = false
 local currentText
+local lation_ui = GetResourceState('lation_ui') == 'started'
 
 ---@param text string
 ---@param options? TextUIOptions
 function lib.showTextUI(text, options)
+    if lation_ui then
+        if type(text) == 'table' and options == nil then
+            return exports.lation_ui:showText(text)
+        end
+        local data = options or {}
+        data.description = text
+        return exports.lation_ui:showText(data)
+    end
+
     if currentText == text then return end
 
     if not options then options = {} end
@@ -35,6 +45,8 @@ function lib.showTextUI(text, options)
 end
 
 function lib.hideTextUI()
+    if lation_ui then return exports.lation_ui:hideText() end
+
     SendNUIMessage({
         action = 'textUiHide'
     })
@@ -45,5 +57,7 @@ end
 
 ---@return boolean, string | nil
 function lib.isTextUIOpen()
+    if lation_ui then return exports.lation_ui:isOpen() end
+
     return isOpen, currentText
 end
