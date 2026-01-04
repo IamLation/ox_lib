@@ -15,9 +15,9 @@ jobs:
       - name: Extract version from fxmanifest
         id: version
         run: |
-          VERSION=$(grep -oP "version\s+'\K[^']+" fxmanifest.lua)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(grep "^version" fxmanifest.lua | sed "s/version '\(.*\)'/\1/")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Install zip
         run: sudo apt install zip
