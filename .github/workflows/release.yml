@@ -53,5 +53,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           automatic_release_tag: ${{ steps.version.outputs.tag }}
           prerelease: false
-          title: "Release ${{ steps.version.outputs.tag }}"
+          title: ${{ steps.version.outputs.tag }}
           files: ox_lib.zip
