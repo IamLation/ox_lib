@@ -181,7 +181,7 @@ function cache(key, func, timeout) end
 
 local cacheEvents = {}
 
-local cache = setmetatable({ game = GetGameName(), resource = resourceName }, {
+local cache = setmetatable({ game = GetGameName() --[[@as 'fxserver' | 'fivem' | 'redm']], resource = resourceName }, {
     __index = function(self, key)
         cacheEvents[key] = {}
 
@@ -258,20 +258,6 @@ else
     ---@diagnostic disable-next-line: duplicate-set-field
     function lib.notify(playerId, data)
         TriggerClientEvent(notifyEvent, playerId, data)
-    end
-
-    local poolNatives = {
-        CPed = GetAllPeds,
-        CObject = GetAllObjects,
-        CVehicle = GetAllVehicles,
-    }
-
-    ---@param poolName 'CPed' | 'CObject' | 'CVehicle'
-    ---@return number[]
-    ---Server-side parity for the `GetGamePool` client native.
-    function GetGamePool(poolName)
-        local fn = poolNatives[poolName]
-        return fn and fn() --[[@as number[] ]]
     end
 
     ---@return number[]

@@ -2,8 +2,11 @@ name: Create release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
 
 jobs:
   create-release:
@@ -12,13 +15,6 @@ jobs:
       - name: Get latest code
         uses: actions/checkout@v4
 
-      - name: Extract version from fxmanifest
-        id: version
-        run: |
-          VERSION=$(grep "^version" fxmanifest.lua | sed "s/version '\(.*\)'/\1/")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Install zip
         run: sudo apt install zip
 
@@ -26,10 +22,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
-      - name: Install package dependencies
-        run: bun install --frozen-lockfile
-        working-directory: package
 
       - name: Install web dependencies
         run: bun install --frozen-lockfile
@@ -48,10 +40,10 @@ jobs:
           cd ./temp && zip -r ../ox_lib.zip ./ox_lib
 
       - name: Create release
-        uses: 'marvinpinto/action-automatic-releases@v1.2.1'
+        uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ steps.version.outputs.tag }}
+          automatic_release_tag: ${{ github.ref_name }}
           prerelease: false
-          title: ${{ steps.version.outputs.tag }}
+          title: ${{ github.ref_name }}
           files: ox_lib.zip

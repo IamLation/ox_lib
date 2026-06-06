@@ -4,6 +4,7 @@
 ---@class OxSelector: OxClass
 ---@field private sets OxSelectorSet | table<string, OxSelectorItem[]>
 ---@field private totalWeights table<string, number>
+---@field private new OxSelectorConstructor
 local OxSelector = lib.class("OxSelector")
 
 local DEFAULT_SET = 'default'
@@ -22,7 +23,9 @@ local function calculateTotalWeight(set)
     return total
 end
 
-
+---@class OxSelectorConstructor
+---@overload fun(self: OxSelector, sets: OxSelectorSet | table<string, OxSelectorItem[]>): OxSelector
+---@private
 ---@param sets OxSelectorSet | table<string, OxSelectorItem[]>
 function OxSelector:constructor(sets)
     if type(sets) ~= "table" then
@@ -72,7 +75,7 @@ function OxSelector:getRandomWeighted(setName)
 
     for i = 1, #set do
         cumulativeWeight = cumulativeWeight + set[i][1]
-        if randomWeight <= cumulativeWeight then
+        if randomWeight < cumulativeWeight then
             local item = set[i][2]
             return type(item) == "table" and deepClone(item) or item
         end

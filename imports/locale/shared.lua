@@ -59,7 +59,7 @@ end
 
 local table = lib.table
 
----Loads the ox_lib locale module. Prefer using fxmanifest instead (see [docs](https://coxdocs.dev/ox_lib#usage)).
+---Loads the ox_lib locale module. Prefer using fxmanifest instead (see [docs](https://overextended.dev/ox_lib#usage)).
 ---@param key? string
 function lib.locale(key)
     local lang = key or lib.getLocaleKey()
@@ -71,10 +71,12 @@ function lib.locale(key)
 
     table.wipe(dict)
 
-    for k, v in pairs(flattenDict(locales, {})) do
+    local flat = flattenDict(locales, {})
+
+    for k, v in pairs(flat) do
         if type(v) == 'string' then
             for var in v:gmatch('${[%w%s%p]-}') do
-                local locale = locales[var:sub(3, -2)]
+                local locale = flat[var:sub(3, -2)]
 
                 if locale then
                     locale = locale:gsub('%%', '%%%%')
