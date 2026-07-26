@@ -2,6 +2,8 @@ name: Create release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*.*.*"
 
@@ -9,7 +11,43 @@ permissions:
   contents: write
 
 jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.check.outputs.publish }}
+    steps:
+      - name: Get latest code
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            version="$GITHUB_REF_NAME"
+          else
+            version="v$(grep -oP "^version\s+'\K[^']+" fxmanifest.lua)"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $version"
+
+      - name: Check for existing release
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Release $VERSION already exists, skipping."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
   create-release:
+    needs: resolve
+    if: needs.resolve.outputs.publish == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Get latest code
@@ -43,7 +81,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ github.ref_name }}
+          automatic_release_tag: ${{ needs.resolve.outputs.version }}
           prerelease: false
-          title: ${{ github.ref_name }}
+          title: ${{ needs.resolve.outputs.version }}
           files: ox_lib.zip
