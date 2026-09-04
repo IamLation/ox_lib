@@ -29,6 +29,11 @@ local function getModuleInfo(modName)
         return resource, modName:sub(#resource + 3)
     end
 
+    if modName:find('^Ox/') then
+        modName = modName:gsub('^Ox/', 'modules/')
+        return lib.name, modName
+    end
+
     local idx = 4 -- call stack depth (kept slightly lower than expected depth "just in case")
 
     while true do

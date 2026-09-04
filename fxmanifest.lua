@@ -26,6 +26,7 @@ files {
     'web/build/index.html',
     'web/build/**/*',
     'locales/*.json',
+    'modules/**/init.lua'
 }
 
 shared_script 'resource/init.lua'
