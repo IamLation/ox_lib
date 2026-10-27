@@ -6,6 +6,7 @@ on:
       - main
     tags:
       - "v*.*.*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,6 +17,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       publish: ${{ steps.check.outputs.publish }}
+      rebuild: ${{ steps.check.outputs.rebuild }}
     steps:
       - name: Get latest code
         uses: actions/checkout@v4
@@ -40,18 +42,28 @@ jobs:
         run: |
           if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "publish=false" >> "$GITHUB_OUTPUT"
-            echo "Release $VERSION already exists, skipping."
+            if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+              echo "rebuild=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Release $VERSION already exists, skipping."
+            fi
           else
             echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
 
   create-release:
     needs: resolve
-    if: needs.resolve.outputs.publish == 'true'
+    if: needs.resolve.outputs.publish == 'true' || needs.resolve.outputs.rebuild == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Get latest code
         uses: actions/checkout@v4
+
+      - name: Checkout cfxlua-require
+        uses: actions/checkout@v4
+        with:
+          repository: overextended/cfxlua-require
+          path: cfxlua-require
 
       - name: Install zip
         run: sudo apt install zip
@@ -75,9 +87,11 @@ jobs:
           cp ./{LICENSE,README.md,fxmanifest.lua,init.lua,require.lua} ./temp/ox_lib
           cp -r ./{imports,resource,locales,modules} ./temp/ox_lib
           cp -r ./web/build ./temp/ox_lib/web/
-          cd ./temp && zip -r ../ox_lib.zip ./ox_lib
+          cp -r ./cfxlua-require/. ./temp/cfxlua-require/
+          cd ./temp && zip -r ../ox_lib.zip ./ox_lib ./cfxlua-require
 
       - name: Create release
+        if: needs.resolve.outputs.publish == 'true'
         uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -85,3 +99,9 @@ jobs:
           prerelease: false
           title: ${{ needs.resolve.outputs.version }}
           files: ox_lib.zip
+
+      - name: Replace release asset
+        if: needs.resolve.outputs.rebuild == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.resolve.outputs.version }}" ox_lib.zip --clobber --repo "$GITHUB_REPOSITORY"
