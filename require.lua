@@ -1,9 +1,5 @@
 -- See https://github.com/overextended/cfxlua-require
 
-if GetResourceState('require') == 'missing' then
-    error("Unable to find 'require' resource provider.\nDownload ^3https://github.com/overextended/cfxlua-require^1 to resolve this error.", 0)
-end
-
 ---@diagnostic disable-next-line: undefined-global
 if not package or not runtime then
     load(LoadResourceFile('require', 'init.lua'), '@@require')()
@@ -33,3 +29,34 @@ table.insert(package.searchers, 1, function(modName)
         return function() return require(module) end
     end
 end)
+
+require 'Ox.Class'
+
+local SemVer = require 'Ox.SemVer'
+local errors = {}
+
+for i = 0, GetNumResourceMetadata(cache.resource, 'fx_dependencie') - 1 do
+    local resource, required = string.strsplit(':', GetResourceMetadata(cache.resource, 'fx_dependencie', i), 2)
+    local version = SemVer:new(GetResourceMetadata(resource, 'version', 0))
+    required = SemVer:new(required)
+
+    if required:compare(version) == 1 then
+        local url = GetResourceMetadata(resource, 'repository', 0) or GetResourceMetadata(resource, 'url', 0)
+        errors[#errors + 1] = ("- %s: required %s, installed %s%s"):format(
+            resource,
+            required,
+            version,
+            url and (' (%s)'):format(url) or ''
+        )
+    end
+end
+
+if #errors > 0 then
+    error(([[The following resource dependencies do not meet the required version:
+    %s
+
+Please update the listed resources to their required versions and restart.]]):format(table.concat(errors, '\n\t')), 0)
+end
+
+
+return require
