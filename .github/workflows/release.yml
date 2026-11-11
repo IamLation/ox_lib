@@ -68,24 +68,24 @@ jobs:
       - name: Install zip
         run: sudo apt install zip
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Nub.js
+        uses: nubjs/setup-nub@v0
         with:
-          bun-version: latest
+          node-version: "24"
 
       - name: Install web dependencies
-        run: bun install --frozen-lockfile
+        run: nub install --frozen-lockfile
         working-directory: web
 
       - name: Run web build script
-        run: bun run build
+        run: nub run build
         working-directory: web
 
       - name: Bundle files
         run: |
           mkdir -p ./temp/ox_lib/web
           cp ./{LICENSE,README.md,fxmanifest.lua,init.lua,require.lua} ./temp/ox_lib
-          cp -r ./{imports,resource,locales,modules} ./temp/ox_lib
+          cp -r ./{imports,resource,locales,modules,dist} ./temp/ox_lib
           cp -r ./web/build ./temp/ox_lib/web/
           rsync -a --exclude='.git/' ./cfxlua-require/ ./temp/cfxlua-require/
           cd ./temp && zip -r ../ox_lib.zip ./ox_lib ./cfxlua-require
