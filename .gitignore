@@ -1,7 +1,9 @@
 .idea
+.ox/
 .luarc.jsonc
 created_zones.lua
 
+dist
 node_modules
 pnpm-debug.log*
 

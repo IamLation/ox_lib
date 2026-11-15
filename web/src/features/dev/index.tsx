@@ -1,15 +1,15 @@
-import { ActionIcon, Button, Divider, Drawer, Stack, Tooltip } from '@mantine/core';
-import { debugAlert } from './debug/alert';
-import { debugContext } from './debug/context';
-import { debugInput } from './debug/input';
-import { debugMenu } from './debug/menu';
-import { debugCustomNotification } from './debug/notification';
-import { debugCircleProgressbar, debugProgressbar } from './debug/progress';
-import { debugTextUI } from './debug/textui';
-import { debugSkillCheck } from './debug/skillcheck';
-import { useState } from 'react';
-import { debugRadial } from './debug/radial';
-import LibIcon from '../../components/LibIcon';
+import { ActionIcon, Button, Divider, Drawer, Stack, Tooltip } from "@mantine/core";
+import { debugAlert } from "./debug/alert";
+import { debugContext } from "./debug/context";
+import { debugInput } from "./debug/input";
+import { debugMenu } from "./debug/menu";
+import { debugCustomNotification } from "./debug/notification";
+import { debugCircleProgressbar, debugProgressbar } from "./debug/progress";
+import { debugTextUI } from "./debug/textui";
+import { debugSkillCheck } from "./debug/skillcheck";
+import { useState } from "react";
+import { debugRadial } from "./debug/radial";
+import LibIcon from "../../components/LibIcon";
 
 const Dev: React.FC = () => {
   const [opened, setOpened] = useState(false);
@@ -22,7 +22,7 @@ const Dev: React.FC = () => {
           radius="xl"
           variant="filled"
           color="orange"
-          sx={{ position: 'absolute', bottom: 0, right: 0, width: 50, height: 50 }}
+          sx={{ position: "absolute", bottom: 0, right: 0, width: 50, height: 50 }}
           size="xl"
           mr={50}
           mb={50}

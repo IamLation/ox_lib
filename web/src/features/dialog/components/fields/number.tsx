@@ -1,8 +1,8 @@
-import { NumberInput } from '@mantine/core';
-import { INumber } from '../../../../typings/dialog';
-import { Control, useController } from 'react-hook-form';
-import { FormValues } from '../../InputDialog';
-import LibIcon from '../../../../components/LibIcon';
+import { NumberInput } from "@mantine/core";
+import { INumber } from "../../../../typings/dialog";
+import { Control, useController } from "react-hook-form";
+import { FormValues } from "../../InputDialog";
+import LibIcon from "../../../../components/LibIcon";
 
 interface Props {
   row: INumber;

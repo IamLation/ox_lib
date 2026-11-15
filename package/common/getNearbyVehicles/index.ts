@@ -1,12 +1,13 @@
 import { cache } from '../cache/index';
 import { context } from '../';
-import { Vector3 } from '@overextended/core/vector';
+import { Vector3 } from '../vector';
 
 interface NearbyVehicle {
   vehicle: number;
   coords: Vector3;
 }
 
+/** Returns vehicles and coordinates strictly within the distance, optionally including the player vehicle. */
 export function getNearbyVehicles(
   coords: Vector3,
   maxDistance: number = 2.0,
@@ -20,7 +21,7 @@ export function getNearbyVehicles(
       const vehicleCoords = Vector3.fromArray(GetEntityCoords(vehicle, true));
       const distance = vehicleCoords.distance(coords);
 
-      if (distance < maxDistance && NetworkGetEntityIsNetworked(vehicle)) {
+      if (distance < maxDistance) {
         nearbyVehicles.push({
           vehicle,
           coords: vehicleCoords,
