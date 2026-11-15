@@ -7,10 +7,13 @@ const registry = new FinalizationRegistry((id: number) => players.delete(id));
 
 type StateChangeHandler<T = any> = (player: Player, key: string, value?: T, old?: T) => void;
 
-const stateChangeHandlers = new Map<string, {
-  cookie: number;
-  subscriptions: Set<{ cb: StateChangeHandler }>;
-}>();
+const stateChangeHandlers = new Map<
+  string,
+  {
+    cookie: number;
+    subscriptions: Set<{ cb: StateChangeHandler }>;
+  }
+>();
 
 /** Returns the cached player wrapper or creates one for the supplied id. */
 function getPlayer(id: number) {
@@ -21,7 +24,7 @@ function getPlayer(id: number) {
     const ref = new WeakRef(player);
 
     players.set(id, ref);
-    registry.register(player, id, ref)
+    registry.register(player, id, ref);
   }
 
   return player;

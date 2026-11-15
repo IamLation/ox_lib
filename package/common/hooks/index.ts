@@ -40,9 +40,7 @@ export class HookPipeline<T = any> {
 
     hooks.add(this);
 
-    cfxExport(`registerHook:${event}`, (ref: Hook["cb"], options?: HookOptions) =>
-      this.registerHook(ref, options),
-    );
+    cfxExport(`registerHook:${event}`, (ref: Hook['cb'], options?: HookOptions) => this.registerHook(ref, options));
 
     cfxExport(`removeHook:${event}`, (hookId: string) => {
       const resource = GetInvokingResource() || cache.resource;

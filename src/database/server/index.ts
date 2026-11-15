@@ -27,7 +27,7 @@ on("esx:playerLoaded", (playerId: number, player: any) => {
   const user = User.Registry.get(playerId);
 
   if (!user) return;
-  
+
   user.setCharacter(player.identifier);
 });
 
@@ -35,7 +35,7 @@ on("QBCore:Server:PlayerLoaded", (player: any) => {
   const user = User.Registry.get(player.PlayerData.source);
 
   if (!user) return;
-  
+
   user.setCharacter(player.PlayerData.citizenid);
 });
 

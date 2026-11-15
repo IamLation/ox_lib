@@ -1,11 +1,11 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 export interface InputProps {
   heading: string;
   rows: Array<IInput | ICheckbox | ISelect | INumber | ISlider | IColorInput | IDateInput | ITextarea | ITimeInput>;
   options?: {
     allowCancel?: boolean;
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    size?: "xs" | "sm" | "md" | "lg" | "xl";
   };
 }
 
@@ -20,14 +20,14 @@ type BaseField<T, U> = {
   required?: boolean;
 };
 
-export interface IInput extends BaseField<'input', string> {
+export interface IInput extends BaseField<"input", string> {
   password?: boolean;
   min?: number;
   max?: number;
 }
 
 export interface ICheckbox {
-  type: 'checkbox';
+  type: "checkbox";
   label: string;
   checked?: boolean;
   disabled?: boolean;
@@ -35,32 +35,34 @@ export interface ICheckbox {
 }
 
 export type OptionValue = { value: string; label?: string };
-export interface ISelect extends BaseField<'select' | 'multi-select', string | string[]> {
+export interface ISelect extends BaseField<"select" | "multi-select", string | string[]> {
   options: Array<OptionValue>;
   clearable?: boolean;
   searchable?: boolean;
   maxSelectedValues?: number;
 }
 
-export interface INumber extends BaseField<'number', number> {
+export interface INumber extends BaseField<"number", number> {
   precision?: number;
   min?: number;
   max?: number;
   step?: number;
 }
 
-export interface ISlider extends Omit<BaseField<'slider', number>, 'description' | 'placeholder'> {
+export interface ISlider extends Omit<BaseField<"slider", number>, "description" | "placeholder"> {
   min?: number;
   max?: number;
   step?: number;
 }
 
-export interface IColorInput extends BaseField<'color', string> {
-  format?: 'hex' | 'hexa' | 'rgb' | 'rgba' | 'hsl' | 'hsla';
+export interface IColorInput extends BaseField<"color", string> {
+  format?: "hex" | "hexa" | "rgb" | "rgba" | "hsl" | "hsla";
 }
 
-export interface IDateInput
-  extends Omit<BaseField<'date' | 'date-range', string | [string, string] | true>, 'placeholder'> {
+export interface IDateInput extends Omit<
+  BaseField<"date" | "date-range", string | [string, string] | true>,
+  "placeholder"
+> {
   format?: string;
   returnString?: boolean;
   clearable?: boolean;
@@ -68,12 +70,12 @@ export interface IDateInput
   max?: string;
 }
 
-export interface ITimeInput extends Omit<BaseField<'time', string>, 'placeholder'> {
-  format?: '12' | '24';
+export interface ITimeInput extends Omit<BaseField<"time", string>, "placeholder"> {
+  format?: "12" | "24";
   clearable?: boolean;
 }
 
-export interface ITextarea extends BaseField<'textarea', string> {
+export interface ITextarea extends BaseField<"textarea", string> {
   autosize?: boolean;
   min?: number;
   max?: number;

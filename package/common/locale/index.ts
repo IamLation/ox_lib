@@ -1,9 +1,9 @@
 import { cache } from '../cache';
 import { printf } from 'fast-printf';
-import type { FlattenObjectKeys } from "../utils";
+import type { FlattenObjectKeys } from '../utils';
 
 const dict: Record<string, string> = {};
-const path = GetResourceMetadata(cache.resource, 'locales_path', 0) || 'locales'
+const path = GetResourceMetadata(cache.resource, 'locales_path', 0) || 'locales';
 
 /** Flattens nested locale keys into dot-separated paths in the target dictionary. */
 function flattenDict(source: Record<string, any>, target: Record<string, string>, prefix?: string) {

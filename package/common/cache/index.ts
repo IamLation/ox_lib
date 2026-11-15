@@ -41,7 +41,7 @@ export const cache: OxCache = new Proxy(
 
 /** Subscribes to changes for a cache key, receiving the new and previous values. */
 export const onCache = <T extends keyof OxCache>(key: T, cb: (value: OxCache[T], oldValue: OxCache[T]) => void) => {
-  if (!cacheEvents[key]) cache[key];
+  if (!cacheEvents[key]) void cache[key];
 
   cacheEvents[key].push(cb);
 };

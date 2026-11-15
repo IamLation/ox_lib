@@ -13,10 +13,12 @@ function streamingRequest<T extends string | number>(
 
   request(asset, ...args);
 
-  return (waitFor(() => {
-    if (hasLoaded(asset)) return asset;
-  }, timeout) as Promise<T>).catch((err) => {
-    throw new Error(`failed to load ${assetType} '${asset}' - ${err}.`)
+  return (
+    waitFor(() => {
+      if (hasLoaded(asset)) return asset;
+    }, timeout) as Promise<T>
+  ).catch((err) => {
+    throw new Error(`failed to load ${assetType} '${asset}' - ${err}.`);
   });
 }
 

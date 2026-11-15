@@ -34,12 +34,9 @@ interface WaitForOptions {
  * If a timeout is given and the time runs out, the promise is rejected instead.
  * @param options A `number` representing how many milliseconds to wait before rejecting the promise, or an object specifying the timeout and interval.
  */
-export function waitFor<T>(
-  predicate: () => T | Promise<T>,
-  options: number | WaitForOptions,
-): Promise<NonNullable<T>> {
-  const timeout = typeof options === 'number' ? options : options.timeout ?? 0;
-  const interval = typeof options === 'number' ? 0 : options.interval ?? 0;
+export function waitFor<T>(predicate: () => T | Promise<T>, options: number | WaitForOptions): Promise<NonNullable<T>> {
+  const timeout = typeof options === 'number' ? options : (options.timeout ?? 0);
+  const interval = typeof options === 'number' ? 0 : (options.interval ?? 0);
   let settled = false;
   let pollTimer: CitizenTimer | undefined;
   let timeoutTimer: CitizenTimer | undefined;
@@ -109,7 +106,6 @@ const PatternChar: Record<string, (...args: any) => string | number> = {
   '.': getRandomAlphanumeric,
 };
 
-
 /**
  * Generates a string based on a pattern.
  *
@@ -121,10 +117,7 @@ const PatternChar: Record<string, (...args: any) => string | number> = {
  * Use `^` to escape a pattern character and treat it literally (e.g., `^a` → "a").
  * All other characters are treated literally.
  */
-export function getRandomString(
-  pattern: string,
-  length: number = pattern.replace(/\^/g, '').length,
-): string {
+export function getRandomString(pattern: string, length: number = pattern.replace(/\^/g, '').length): string {
   let str = '';
   let i = 0;
 

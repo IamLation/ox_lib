@@ -1,43 +1,43 @@
-import { Button, createStyles, Group, HoverCard, Image, Progress, Stack, Text } from '@mantine/core';
-import ReactMarkdown from 'react-markdown';
-import { ContextMenuProps, Option } from '../../../../typings';
-import { fetchNui } from '../../../../utils/fetchNui';
-import { isIconUrl } from '../../../../utils/isIconUrl';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import MarkdownComponents from '../../../../config/MarkdownComponents';
-import LibIcon from '../../../../components/LibIcon';
+import { Button, createStyles, Group, HoverCard, Image, Progress, Stack, Text } from "@mantine/core";
+import ReactMarkdown from "react-markdown";
+import { ContextMenuProps, Option } from "../../../../typings";
+import { fetchNui } from "../../../../utils/fetchNui";
+import { isIconUrl } from "../../../../utils/isIconUrl";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import MarkdownComponents from "../../../../config/MarkdownComponents";
+import LibIcon from "../../../../components/LibIcon";
 
 const openMenu = (id: string | undefined) => {
-  fetchNui<ContextMenuProps>('openContext', { id: id, back: false });
+  fetchNui<ContextMenuProps>("openContext", { id: id, back: false });
 };
 
 const clickContext = (id: string) => {
-  fetchNui('clickContext', id);
+  fetchNui("clickContext", id);
 };
 
 const useStyles = createStyles((theme, params: { disabled?: boolean; readOnly?: boolean }) => ({
   inner: {
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
   },
   label: {
-    width: '100%',
+    width: "100%",
     color: params.disabled ? theme.colors.dark[3] : theme.colors.dark[0],
-    whiteSpace: 'pre-wrap',
+    whiteSpace: "pre-wrap",
   },
   button: {
-    height: 'fit-content',
-    width: '100%',
+    height: "fit-content",
+    width: "100%",
     padding: 10,
-    '&:hover': {
+    "&:hover": {
       backgroundColor: params.readOnly ? theme.colors.dark[6] : undefined,
-      cursor: params.readOnly ? 'unset' : 'pointer',
+      cursor: params.readOnly ? "unset" : "pointer",
     },
-    '&:active': {
-      transform: params.readOnly ? 'unset' : undefined,
+    "&:active": {
+      transform: params.readOnly ? "unset" : undefined,
     },
   },
   iconImage: {
-    maxWidth: '25px',
+    maxWidth: "25px",
   },
   description: {
     color: params.disabled ? theme.colors.dark[3] : theme.colors.dark[2],
@@ -48,29 +48,29 @@ const useStyles = createStyles((theme, params: { disabled?: boolean; readOnly?: 
     color: theme.colors.dark[0],
     fontSize: 14,
     maxWidth: 256,
-    width: 'fit-content',
-    border: 'none',
+    width: "fit-content",
+    border: "none",
   },
   buttonStack: {
     gap: 4,
-    flex: '1',
+    flex: "1",
   },
   buttonGroup: {
     gap: 4,
-    flexWrap: 'nowrap',
+    flexWrap: "nowrap",
   },
   buttonIconContainer: {
     width: 25,
     height: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonTitleText: {
-    overflowWrap: 'break-word',
+    overflowWrap: "break-word",
   },
   buttonArrowContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 25,
     height: 25,
   },
@@ -109,7 +109,7 @@ const ContextButton: React.FC<{
                   <Group className={classes.buttonGroup}>
                     {button?.icon && (
                       <Stack className={classes.buttonIconContainer}>
-                        {typeof button.icon === 'string' && isIconUrl(button.icon) ? (
+                        {typeof button.icon === "string" && isIconUrl(button.icon) ? (
                           <img src={button.icon} className={classes.iconImage} alt="Missing img" />
                         ) : (
                           <LibIcon
@@ -133,7 +133,7 @@ const ContextButton: React.FC<{
                   </Text>
                 )}
                 {button.progress !== undefined && (
-                  <Progress value={button.progress} size="sm" color={button.colorScheme || 'dark.3'} />
+                  <Progress value={button.progress} size="sm" color={button.colorScheme || "dark.3"} />
                 )}
               </Stack>
               {(button.menu || button.arrow) && button.arrow !== false && (
@@ -150,26 +150,26 @@ const ContextButton: React.FC<{
             button.metadata.map(
               (
                 metadata: string | { label: string; value?: any; progress?: number; colorScheme?: string },
-                index: number
+                index: number,
               ) => (
                 <>
                   <Text key={`context-metadata-${index}`}>
-                    {typeof metadata === 'string' ? `${metadata}` : `${metadata.label}: ${metadata?.value ?? ''}`}
+                    {typeof metadata === "string" ? `${metadata}` : `${metadata.label}: ${metadata?.value ?? ""}`}
                   </Text>
 
-                  {typeof metadata === 'object' && metadata.progress !== undefined && (
+                  {typeof metadata === "object" && metadata.progress !== undefined && (
                     <Progress
                       value={metadata.progress}
                       size="sm"
-                      color={metadata.colorScheme || button.colorScheme || 'dark.3'}
+                      color={metadata.colorScheme || button.colorScheme || "dark.3"}
                     />
                   )}
                 </>
-              )
+              ),
             )
           ) : (
             <>
-              {typeof button.metadata === 'object' &&
+              {typeof button.metadata === "object" &&
                 Object.entries(button.metadata).map((metadata: { [key: string]: any }, index) => (
                   <Text key={`context-metadata-${index}`}>
                     {metadata[0]}: {metadata[1]}

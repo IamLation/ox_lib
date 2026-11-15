@@ -60,7 +60,7 @@ export class Zone extends GridEntry {
 
   /** Returns a set of all zones the player is currently standing inside. Always empty on the server. */
   public static getCurrent() {
-    return insideZones
+    return insideZones;
   }
 
   /** Returns a set of all zones near the given point, or the player if undefined. */
@@ -80,10 +80,7 @@ export class Zone extends GridEntry {
     const bounds = shape.bounds;
 
     super({
-      coords: new Vector2(
-        (bounds.minX + bounds.maxX) / 2,
-        (bounds.minY + bounds.maxY) / 2,
-      ),
+      coords: new Vector2((bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2),
       width: bounds.maxX - bounds.minX,
       height: bounds.maxY - bounds.minY,
     });
@@ -97,7 +94,7 @@ export class Zone extends GridEntry {
 
   /** Checks whether a point lies inside the zone shape, including its boundary. */
   public contains(point: Vector3) {
-    return this.shape.contains(point.x, point.y, point.z)
+    return this.shape.contains(point.x, point.y, point.z);
   }
 
   /** Draws supported zone shapes for debugging on the client. */
@@ -171,7 +168,7 @@ export class Zone extends GridEntry {
 
   /** Removes the zone from the registry. */
   public remove() {
-    Zone.delete(this.id)
+    Zone.delete(this.id);
   }
 }
 

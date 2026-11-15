@@ -11,10 +11,12 @@ type RadialItem = {
 };
 
 /** Adds or replaces items in the global radial menu or the specified submenu. */
-export const addRadialItem = (items: RadialItem | RadialItem[], parentMenuId?: string) => exports.ox_lib.addRadialItem(items, parentMenuId);
+export const addRadialItem = (items: RadialItem | RadialItem[], parentMenuId?: string) =>
+  exports.ox_lib.addRadialItem(items, parentMenuId);
 
 /** Removes an item by id from the global radial menu or the specified submenu. */
-export const removeRadialItem = (item: string, parentMenuId?: string) => exports.ox_lib.removeRadialItem(item, parentMenuId);
+export const removeRadialItem = (item: string, parentMenuId?: string) =>
+  exports.ox_lib.removeRadialItem(item, parentMenuId);
 
 /** Registers a radial submenu by id. */
 export const registerRadial = (radial: { id: string; items: Omit<RadialItem, 'id'>[] }) =>

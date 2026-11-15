@@ -21,7 +21,7 @@ export abstract class GameEntity {
   /** Writes entity state, requesting server validation for synced values and strict client replication. */
   public async set(key: string, value: unknown, mode?: StateBagReplication): Promise<boolean> {
     if (mode && !this.netId) mode = undefined;
-  
+
     if ((mode === 1 && !allowStateBagReplication) || mode === 2) {
       if (mode === 2 && this.type !== 'Player') {
         throw new Error('Setting synced-states is not supported for non-player entities.');
@@ -30,7 +30,14 @@ export abstract class GameEntity {
       if (!isServer) {
         const ok = await import('../../../client/callback').then(
           (m) =>
-            m.triggerServerCallback('ox_lib:requestSetStateBag', null, this.statebag, key, value, mode) as Promise<boolean>,
+            m.triggerServerCallback(
+              'ox_lib:requestSetStateBag',
+              null,
+              this.statebag,
+              key,
+              value,
+              mode,
+            ) as Promise<boolean>,
         );
 
         return ok ? this.set(key, value) : false;

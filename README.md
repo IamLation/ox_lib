@@ -19,6 +19,7 @@ For guidelines to contributing to the project, and to see our Contributor Licens
 For additional legal notices, refer to [NOTICE.md](./NOTICE.md).
 
 ## Dependencies
+
 - [cfxlua-require](https://github.com/overextended/cfxlua-require) (included in release)
 
 ## 📚 Documentation

@@ -1,4 +1,4 @@
-import { Vehicle, type VehicleType } from "../../../common/game/Vehicle";
+import { Vehicle, type VehicleType } from '../../../common/game/Vehicle';
 
 /** Creates a server vehicle using the setter native or the RedM creation fallback. */
 const CreateVehicleServerSetter =

@@ -1,7 +1,7 @@
 export interface CircleProgressbarProps {
   label?: string;
   duration: number;
-  position?: 'middle' | 'bottom';
+  position?: "middle" | "bottom";
   percent?: boolean;
 }
 
