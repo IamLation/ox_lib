@@ -7,6 +7,7 @@
 import { cfxExport } from "@overextended/ox_lib/common/exports";
 import { dbr } from "./sqlite";
 import { User } from "./user";
+import "framework";
 
 cfxExport("dbFindOne", (query = "", parameters = []) => dbr.prepare(query).get(parameters));
 cfxExport("dbFindAll", (query = "", parameters = []) => dbr.prepare(query).all(parameters));
@@ -22,22 +23,3 @@ setTimeout(
     }),
   100,
 );
-
-on("esx:playerLoaded", (playerId: number, player: any) => {
-  const user = User.Registry.get(playerId);
-
-  if (!user) return;
-
-  user.setCharacter(player.identifier);
-});
-
-on("QBCore:Server:PlayerLoaded", (player: any) => {
-  const user = User.Registry.get(player.PlayerData.source);
-
-  if (!user) return;
-
-  user.setCharacter(player.PlayerData.citizenid);
-});
-
-// do these things not have events for character deletion?
-// todo: ensure characters with esx identifiers / qbus citizenids get cleaned up

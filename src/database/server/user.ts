@@ -1,6 +1,7 @@
+import { uuid } from "@overextended/ox_lib/common/uuid";
 import { Character } from "./character";
 import { KvpStore } from "./kvp";
-import { encode, prepare } from "./sqlite";
+import { prepare } from "./sqlite";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
@@ -59,36 +60,30 @@ export class User {
     return User.Kvp.get(this.id, ...keys);
   }
 
-  setCharacter(charId: number | string) {
-    if (charId === -1) {
+  setCharacter(charId: number | string): Character | null {
+    console.log("setting character", this.id, this.license, this.playerId, charId);
+    if (typeof charId === "string") {
       const id =
-        (prepare(`SELECT id FROM character WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1`).get(this.id)
-          ?.id as number) ?? this.addCharacter();
-      this.character = new Character(id);
+        (prepare(`SELECT id FROM character WHERE uuid = ?`).get(Buffer.from(charId.replaceAll("-", ""), "hex"))
+          ?.id as number) ?? this.addCharacter(charId);
 
-      return;
-    } else if (typeof charId === "string") {
-      const result = prepare(`
-        SELECT id FROM character
-        JOIN character_kvp kvp ON kvp.char_id = character.id
-        WHERE character.user_id = ? AND kvp.key = 'fw-identifier' AND kvp.value = ?
-      `).get(this.id, encode(charId)) as { id: number };
+      return this.setCharacter(id);
+    } else if (charId === -1) {
+      const id = prepare(`SELECT id FROM character WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1`).get(this.id)
+        ?.id as number;
 
-      if (!result) {
-        this.setCharacter(this.addCharacter());
-        this.character?.set("fw-identifier", charId);
-      } else {
-        this.setCharacter(result.id);
-      }
-
-      return;
+      return this.setCharacter(id);
     }
+
+    if (!charId) return this.setCharacter(this.addCharacter(uuid.generate()));
 
     const character = this.getCharacter(charId);
 
     if (!character) throw new Error(`user:${this.id} does not own character:${charId}.`);
 
     this.character = new Character(charId);
+
+    return this.character;
   }
 
   getCharacter(charId: number) {
@@ -99,8 +94,11 @@ export class User {
     return prepare(`SELECT * FROM character WHERE user_id = ?`).all(this.id);
   }
 
-  addCharacter() {
-    return prepare(`INSERT INTO character(user_id, last_seen) VALUES (?, unixepoch()) RETURNING id`).get(this.id)!
-      .id! as number;
+  addCharacter(uuid: string) {
+    console.log("adding new user", uuid);
+    return prepare(`INSERT INTO character(user_id, uuid, last_seen) VALUES (?, ?, unixepoch()) RETURNING id`).get(
+      this.id,
+      Buffer.from(uuid.replaceAll("-", ""), "hex"),
+    )!.id! as number;
   }
 }

@@ -14,3 +14,4 @@ pnpm-debug.log*
 /web/node_modules
 /web/build
 /package/dist
+fxmanifest.lua
