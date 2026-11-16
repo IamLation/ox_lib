@@ -1,46 +1,46 @@
-import { useNuiEvent } from '../../../hooks/useNuiEvent';
-import { Box, createStyles, Flex, Stack, Text } from '@mantine/core';
-import { useEffect, useState } from 'react';
-import { ContextMenuPosition, ContextMenuProps } from '../../../typings';
-import ContextButton from './components/ContextButton';
-import { fetchNui } from '../../../utils/fetchNui';
-import ReactMarkdown from 'react-markdown';
-import HeaderButton from './components/HeaderButton';
-import ScaleFade from '../../../transitions/ScaleFade';
-import MarkdownComponents from '../../../config/MarkdownComponents';
+import { useNuiEvent } from "../../../hooks/useNuiEvent";
+import { Box, createStyles, Flex, Stack, Text } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { ContextMenuPosition, ContextMenuProps } from "../../../typings";
+import ContextButton from "./components/ContextButton";
+import { fetchNui } from "../../../utils/fetchNui";
+import ReactMarkdown from "react-markdown";
+import HeaderButton from "./components/HeaderButton";
+import ScaleFade from "../../../transitions/ScaleFade";
+import MarkdownComponents from "../../../config/MarkdownComponents";
 
 const openMenu = (id: string | undefined) => {
-  fetchNui<ContextMenuProps>('openContext', { id: id, back: true });
+  fetchNui<ContextMenuProps>("openContext", { id: id, back: true });
 };
 
 const useStyles = createStyles((theme, params: { position?: ContextMenuPosition }) => ({
   container: {
-    position: 'absolute',
-    top: params.position === 'bottom-left' || params.position === 'bottom-right' ? undefined : '15%',
-    bottom: params.position === 'bottom-left' || params.position === 'bottom-right' ? '15%' : undefined,
-    left: params.position === 'top-left' || params.position === 'bottom-left' ? '25%' : undefined,
-    right: params.position === 'top-left' || params.position === 'bottom-left' ? undefined : '25%',
+    position: "absolute",
+    top: params.position === "bottom-left" || params.position === "bottom-right" ? undefined : "15%",
+    bottom: params.position === "bottom-left" || params.position === "bottom-right" ? "15%" : undefined,
+    left: params.position === "top-left" || params.position === "bottom-left" ? "25%" : undefined,
+    right: params.position === "top-left" || params.position === "bottom-left" ? undefined : "25%",
     width: 320,
   },
   header: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 10,
     gap: 6,
   },
   titleContainer: {
     borderRadius: 4,
-    flex: '1 85%',
+    flex: "1 85%",
     backgroundColor: theme.colors.dark[6],
   },
   titleText: {
     color: theme.colors.dark[0],
     padding: 6,
-    textAlign: 'center',
+    textAlign: "center",
   },
   buttonsContainer: {
     maxHeight: 560,
-    overflowY: 'scroll',
+    overflowY: "scroll",
   },
   buttonsFlexWrapper: {
     gap: 3,
@@ -50,15 +50,15 @@ const useStyles = createStyles((theme, params: { position?: ContextMenuPosition 
 const ContextMenu: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuProps>({
-    title: '',
-    options: { '': { description: '', metadata: [] } },
+    title: "",
+    options: { "": { description: "", metadata: [] } },
   });
   const { classes } = useStyles({ position: contextMenu.position });
 
   const closeContext = () => {
     if (contextMenu.canClose === false) return;
     setVisible(false);
-    fetchNui('closeContext');
+    fetchNui("closeContext");
   };
 
   // Hides the context menu on ESC
@@ -66,17 +66,17 @@ const ContextMenu: React.FC = () => {
     if (!visible) return;
 
     const keyHandler = (e: KeyboardEvent) => {
-      if (['Escape'].includes(e.code)) closeContext();
+      if (["Escape"].includes(e.code)) closeContext();
     };
 
-    window.addEventListener('keydown', keyHandler);
+    window.addEventListener("keydown", keyHandler);
 
-    return () => window.removeEventListener('keydown', keyHandler);
+    return () => window.removeEventListener("keydown", keyHandler);
   }, [visible]);
 
-  useNuiEvent('hideContext', () => setVisible(false));
+  useNuiEvent("hideContext", () => setVisible(false));
 
-  useNuiEvent<ContextMenuProps>('showContext', async (data) => {
+  useNuiEvent<ContextMenuProps>("showContext", async (data) => {
     if (visible) {
       setVisible(false);
       await new Promise((resolve) => setTimeout(resolve, 100));

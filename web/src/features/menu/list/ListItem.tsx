@@ -1,10 +1,10 @@
-import { Box, createStyles, Group, Progress, Stack, Text } from '@mantine/core';
-import React, { forwardRef } from 'react';
-import CustomCheckbox from './CustomCheckbox';
-import type { MenuItem } from '../../../typings';
-import { isIconUrl } from '../../../utils/isIconUrl';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import LibIcon from '../../../components/LibIcon';
+import { Box, createStyles, Group, Progress, Stack, Text } from "@mantine/core";
+import React, { forwardRef } from "react";
+import CustomCheckbox from "./CustomCheckbox";
+import type { MenuItem } from "../../../typings";
+import { isIconUrl } from "../../../utils/isIconUrl";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import LibIcon from "../../../components/LibIcon";
 
 interface Props {
   item: MenuItem;
@@ -20,9 +20,9 @@ const useStyles = createStyles((theme, params: { iconColor?: string }) => ({
     padding: 2,
     height: 60,
     scrollMargin: 8,
-    '&:focus': {
+    "&:focus": {
       backgroundColor: theme.colors.dark[4],
-      outline: 'none',
+      outline: "none",
     },
   },
   iconImage: {
@@ -31,11 +31,11 @@ const useStyles = createStyles((theme, params: { iconColor?: string }) => ({
   buttonWrapper: {
     paddingLeft: 5,
     paddingRight: 12,
-    height: '100%',
+    height: "100%",
   },
   iconContainer: {
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
     width: 32,
     height: 32,
   },
@@ -45,9 +45,9 @@ const useStyles = createStyles((theme, params: { iconColor?: string }) => ({
   },
   label: {
     color: theme.colors.dark[2],
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     fontSize: 12,
-    verticalAlign: 'middle',
+    verticalAlign: "middle",
   },
   chevronIcon: {
     fontSize: 14,
@@ -55,15 +55,15 @@ const useStyles = createStyles((theme, params: { iconColor?: string }) => ({
   },
   scrollIndexValue: {
     color: theme.colors.dark[2],
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     fontSize: 14,
   },
   progressStack: {
-    width: '100%',
+    width: "100%",
     marginRight: 5,
   },
   progressLabel: {
-    verticalAlign: 'middle',
+    verticalAlign: "middle",
     marginBottom: 3,
   },
 }));
@@ -85,7 +85,7 @@ const ListItem = forwardRef<Array<HTMLDivElement | null>, Props>(({ item, index,
       <Group spacing={15} noWrap className={classes.buttonWrapper}>
         {item.icon && (
           <Box className={classes.iconContainer}>
-            {typeof item.icon === 'string' && isIconUrl(item.icon) ? (
+            {typeof item.icon === "string" && isIconUrl(item.icon) ? (
               <img src={item.icon} alt="Missing image" className={classes.iconImage} />
             ) : (
               <LibIcon
@@ -102,7 +102,7 @@ const ListItem = forwardRef<Array<HTMLDivElement | null>, Props>(({ item, index,
             <Stack spacing={0} justify="space-between">
               <Text className={classes.label}>{item.label}</Text>
               <Text>
-                {typeof item.values[scrollIndex] === 'object'
+                {typeof item.values[scrollIndex] === "object"
                   ? // @ts-ignore for some reason even checking the type TS still thinks it's a string
                     item.values[scrollIndex].label
                   : item.values[scrollIndex]}
@@ -126,7 +126,7 @@ const ListItem = forwardRef<Array<HTMLDivElement | null>, Props>(({ item, index,
             <Text className={classes.progressLabel}>{item.label}</Text>
             <Progress
               value={item.progress}
-              color={item.colorScheme || 'dark.0'}
+              color={item.colorScheme || "dark.0"}
               styles={(theme) => ({ root: { backgroundColor: theme.colors.dark[3] } })}
             />
           </Stack>

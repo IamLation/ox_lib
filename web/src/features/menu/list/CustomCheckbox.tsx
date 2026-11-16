@@ -1,16 +1,16 @@
-import { Checkbox, createStyles } from '@mantine/core';
+import { Checkbox, createStyles } from "@mantine/core";
 
 const useStyles = createStyles((theme) => ({
   root: {
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
   },
   input: {
     backgroundColor: theme.colors.dark[7],
-    '&:checked': { backgroundColor: theme.colors.dark[2], borderColor: theme.colors.dark[2] },
+    "&:checked": { backgroundColor: theme.colors.dark[2], borderColor: theme.colors.dark[2] },
   },
   inner: {
-    '> svg > path': {
+    "> svg > path": {
       fill: theme.colors.dark[6],
     },
   },

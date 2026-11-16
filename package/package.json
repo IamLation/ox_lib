@@ -51,10 +51,9 @@
     "compile": "tsdown --",
     "lint": "oxlint",
     "format": "oxfmt",
-    "prepublishOnly": "bun run compile"
+    "prepublishOnly": "nub run compile"
   },
   "dependencies": {
-    "@overextended/core": "^0.2.5",
     "csstype": "^3.2.3",
     "fast-printf": "^1.6.10",
     "typescript": "^6.0.3"
@@ -64,7 +63,7 @@
     "@citizenfx/server": "latest",
     "@fortawesome/fontawesome-common-types": "7.2.0",
     "@mantine/core": "^6.0.22",
-    "@types/node": "16.9.1",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.2.15",
     "oxfmt": "^0.51.0",
     "oxlint": "^1.66.0",
