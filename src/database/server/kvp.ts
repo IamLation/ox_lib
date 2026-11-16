@@ -1,5 +1,4 @@
-import { decode, encode } from "node:querystring";
-import { db, prepare } from "./sqlite";
+import { db, decode, encode } from "./sqlite";
 
 export class KvpStore {
   public table: string;
@@ -24,24 +23,35 @@ export class KvpStore {
 
   set(charId: number, key: string, value: any) {
     return (
-      prepare(`
-      INSERT INTO ${this.table} (${this.id_col}, key, value)
-        VALUES (?, ?, ?)
-      ON CONFLICT (${this.id_col}, key) DO
-        UPDATE SET value = excluded.value;
-    `).run(charId, key, encode(value))?.changes > 0
+      db.run(
+        `
+        INSERT INTO ${this.table} (${this.id_col}, key, value)
+          VALUES (?, ?, ?)
+        ON CONFLICT (${this.id_col}, key) DO
+          UPDATE SET value = excluded.value;
+    `,
+        charId,
+        key,
+        encode(value),
+      )?.changes > 0
     );
   }
 
-  get(charId: number, ...keys: string[]): Record<string, any> {
+  get(charId: number, ...keys: string[]) {
     const placeholders = keys.map(() => "?").join(", ");
 
     return db
-      .prepare(`SELECT key, value FROM ${this.table} WHERE ${this.id_col} = ? AND key IN (${placeholders})`)
-      .all(charId, ...keys)
-      .reduce((acc: Record<string, any>, { key, value }: { key: string; value: any }) => {
-        acc[key] = decode(value);
-        return acc;
-      }, {});
+      .all<{ key: string; value: any }>(
+        `SELECT key, value FROM ${this.table} WHERE ${this.id_col} = ? AND key IN (${placeholders})`,
+        charId,
+        ...keys,
+      )
+      .reduce(
+        (acc, { key, value }) => {
+          acc[key] = decode(value);
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
   }
 }

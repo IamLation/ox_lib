@@ -36,6 +36,7 @@
     "node": ">=22.22.0"
   },
   "dependencies": {
-    "@overextended/oxmysql": "^2.14.3"
+    "@overextended/oxmysql": "^2.14.3",
+    "lru.min": "^1.1.5"
   }
 }

@@ -1,7 +1,7 @@
 import { uuid } from "@overextended/ox_lib/common/uuid";
 import { Character } from "./character";
 import { KvpStore } from "./kvp";
-import { prepare } from "./sqlite";
+import { db } from "./sqlite";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
@@ -30,19 +30,17 @@ export class User {
       throw new Error(`player:${playerId} has no valid license.`);
     }
 
-    const { id } = prepare(`
+    const { id } = db.get<{ id: number }>`
       INSERT INTO user (license, last_seen)
-        VALUES (?, unixepoch())
+        VALUES (${license}, unixepoch())
       ON CONFLICT (license) DO
         UPDATE SET last_seen = unixepoch()
       RETURNING id
-    `).get(license) as { id: number };
+    `!;
 
-    getPlayerTokens(playerId).forEach((token) =>
-      prepare(`INSERT OR IGNORE INTO user_tokens (user_id, token, last_seen) VALUES (?, ?, unixepoch())`).run(
-        this.id,
-        token,
-      ),
+    getPlayerTokens(playerId).forEach(
+      (token) =>
+        db.run`INSERT OR IGNORE INTO user_tokens (user_id, token, last_seen) VALUES (${this.id}, ${token}, unixepoch())`,
     );
 
     this.id = id;
@@ -61,15 +59,13 @@ export class User {
   }
 
   setCharacter(charId: number | string): Character | null {
-    console.log("setting character", this.id, this.license, this.playerId, charId);
     if (typeof charId === "string") {
-      const id =
-        (prepare(`SELECT id FROM character WHERE uuid = ?`).get(Buffer.from(charId.replaceAll("-", ""), "hex"))
-          ?.id as number) ?? this.addCharacter(charId);
+      const buffer = Buffer.from(charId.replaceAll("-", ""), "hex");
+      const id = (db.get`SELECT id FROM character WHERE uuid = ${buffer}`?.id as number) ?? this.addCharacter(charId);
 
       return this.setCharacter(id);
     } else if (charId === -1) {
-      const id = prepare(`SELECT id FROM character WHERE user_id = ? ORDER BY last_seen DESC LIMIT 1`).get(this.id)
+      const id = db.get`SELECT id FROM character WHERE user_id = ${this.id} ORDER BY last_seen DESC LIMIT 1`
         ?.id as number;
 
       return this.setCharacter(id);
@@ -87,18 +83,16 @@ export class User {
   }
 
   getCharacter(charId: number) {
-    return prepare(`SELECT * FROM character WHERE user_id = ? AND id = ?`).get(this.id, charId);
+    return db.get`SELECT * FROM character WHERE user_id = ${this.id} AND id = ${charId}`;
   }
 
   getCharacters() {
-    return prepare(`SELECT * FROM character WHERE user_id = ?`).all(this.id);
+    return db.all`SELECT * FROM character WHERE user_id = ${this.id}`;
   }
 
   addCharacter(uuid: string) {
-    console.log("adding new user", uuid);
-    return prepare(`INSERT INTO character(user_id, uuid, last_seen) VALUES (?, ?, unixepoch()) RETURNING id`).get(
-      this.id,
-      Buffer.from(uuid.replaceAll("-", ""), "hex"),
-    )!.id! as number;
+    const buffer = Buffer.from(uuid.replaceAll("-", ""), "hex");
+    return db.get`INSERT INTO character(user_id, uuid, last_seen) VALUES (${this.id}, ${buffer}, unixepoch()) RETURNING id`!
+      .id as number;
   }
 }
