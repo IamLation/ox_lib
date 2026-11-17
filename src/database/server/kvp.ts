@@ -1,4 +1,4 @@
-import { db, decode, encode } from "./sqlite";
+import { db, decode, encode, type Row } from "./sqlite";
 
 export class KvpStore {
   public table: string;
@@ -21,7 +21,7 @@ export class KvpStore {
     `);
   }
 
-  set(charId: number, key: string, value: any) {
+  public set(charId: number, key: string, value: any) {
     return (
       db.run(
         `
@@ -37,21 +37,17 @@ export class KvpStore {
     );
   }
 
-  get(charId: number, ...keys: string[]) {
-    const placeholders = keys.map(() => "?").join(", ");
+  public get<T extends Row>(charId: number, ...keys: string[]) {
+    const filter = keys.length ? ` AND key IN (${keys.map(() => "?").join(", ")})` : "";
 
-    return db
-      .all<{ key: string; value: any }>(
-        `SELECT key, value FROM ${this.table} WHERE ${this.id_col} = ? AND key IN (${placeholders})`,
-        charId,
-        ...keys,
-      )
-      .reduce(
-        (acc, { key, value }) => {
-          acc[key] = decode(value);
-          return acc;
-        },
-        {} as Record<string, any>,
-      );
+    const { data } = db.get<{ data: string }>(
+      `SELECT json_group_object(key, json(value)) AS data
+     FROM ${this.table}
+     WHERE ${this.id_col} = ?${filter}`,
+      charId,
+      ...keys,
+    )!;
+
+    return decode<T>(data);
   }
 }
