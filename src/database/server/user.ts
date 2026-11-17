@@ -1,64 +1,89 @@
 import { uuid } from "@overextended/ox_lib/common/uuid";
 import { Character } from "./character";
 import { KvpStore } from "./kvp";
-import { db } from "./sqlite";
+import { db, type UserRow, type CharacterRow } from "./sqlite";
+import { createLRU } from "lru.min";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
-function GetPlayerLicense(playerId: string) {
-  const license = GetPlayerIdentifierByType(playerId, "license");
+function GetPlayerLicense(playerId: string | number) {
+  const license = GetPlayerIdentifierByType(playerId as string, "license");
 
-  if (license || !SV_LAN) return license;
+  if (license) return license;
 
-  return `temp${GetHashKey(GetPlayerIdentifierByType(playerId, "ip")).toString(16).padStart(36, "0")}`;
+  if (SV_LAN) {
+    const hash = GetHashKey(GetPlayerIdentifierByType(playerId as string, "ip"));
+    return `temp${hash.toString(16).padStart(36, "0")}}`;
+  }
+
+  throw new Error(`player:${playerId} has no valid license.`);
 }
 
+/**
+ * A persistent account associated with a player's game license.
+ */
 export class User {
-  static Kvp = new KvpStore("user");
-  static Registry = new Map<number, User>();
+  private static cache = createLRU<string, User>({ max: 100 });
+  private static active = new Map<string, User>();
+  private static playerIds = new Map<number, User>();
+  private static kvp = new KvpStore("user");
+
+  static fromLicense(license: string) {
+    return User.active.get(license) || User.cache.get(license) || new User(license);
+  }
+
+  static fromPlayerId(playerId: number) {
+    return User.playerIds.get(playerId) || new User(GetPlayerLicense(playerId), playerId);
+  }
 
   public id: number;
-  public license: string;
-  public playerId: number;
   public character?: Character;
 
-  constructor(playerId: string | number) {
-    playerId = +playerId;
-    const license = GetPlayerLicense(playerId as any);
-
-    if (!license) {
-      throw new Error(`player:${playerId} has no valid license.`);
-    }
-
-    const { id } = db.get<{ id: number }>`
-      INSERT INTO user (license, last_seen)
-        VALUES (${license}, unixepoch())
-      ON CONFLICT (license) DO
-        UPDATE SET last_seen = unixepoch()
+  constructor(
+    public license: string,
+    public playerId?: number,
+  ) {
+    const { id } = db.get<UserRow>`
+      INSERT INTO user (license, last_seen) VALUES (${license}, unixepoch())
+      ON CONFLICT (license) DO UPDATE SET last_seen = unixepoch()
       RETURNING id
     `!;
+
+    this.id = id;
+
+    if (playerId) this.setOnline(playerId);
+    else this.setOffline();
+  }
+
+  public setOnline(playerId: number) {
+    this.playerId = playerId;
+
+    User.cache.delete(this.license);
+    User.active.set(this.license, this);
+    User.playerIds.set(this.playerId, this);
 
     getPlayerTokens(playerId).forEach(
       (token) =>
         db.run`INSERT OR IGNORE INTO user_tokens (user_id, token, last_seen) VALUES (${this.id}, ${token}, unixepoch())`,
     );
-
-    this.id = id;
-    this.license = license;
-    this.playerId = playerId;
-
-    User.Registry.set(playerId, this);
   }
 
-  set(key: string, value: any) {
-    return User.Kvp.set(this.id, key, value);
+  public setOffline() {
+    if (!this.playerId) return;
+
+    User.active.delete(this.license);
+    User.playerIds.delete(this.playerId);
   }
 
-  get(...keys: string[]) {
-    return User.Kvp.get(this.id, ...keys);
+  public set(key: string, value: any) {
+    return User.kvp.set(this.id, key, value);
   }
 
-  setCharacter(charId: number | string): Character | null {
+  public get(...keys: string[]) {
+    return User.kvp.get(this.id, ...keys);
+  }
+
+  public setCharacter(charId: number | string): Character | null {
     if (typeof charId === "string") {
       const buffer = Buffer.from(charId.replaceAll("-", ""), "hex");
       const id = (db.get`SELECT id FROM character WHERE uuid = ${buffer}`?.id as number) ?? this.addCharacter(charId);
@@ -77,22 +102,22 @@ export class User {
 
     if (!character) throw new Error(`user:${this.id} does not own character:${charId}.`);
 
-    this.character = new Character(charId);
+    this.character = new Character(character.id, character.user_id, character.uuid);
 
     return this.character;
   }
 
-  getCharacter(charId: number) {
-    return db.get`SELECT * FROM character WHERE user_id = ${this.id} AND id = ${charId}`;
+  public getCharacter(charId: number) {
+    return db.get<CharacterRow>`SELECT * FROM character WHERE user_id = ${this.id} AND id = ${charId}`;
   }
 
-  getCharacters() {
-    return db.all`SELECT * FROM character WHERE user_id = ${this.id}`;
+  public getCharacters() {
+    return db.all<CharacterRow>`SELECT * FROM character WHERE user_id = ${this.id}`;
   }
 
-  addCharacter(uuid: string) {
+  public addCharacter(uuid: string) {
     const buffer = Buffer.from(uuid.replaceAll("-", ""), "hex");
-    return db.get`INSERT INTO character(user_id, uuid, last_seen) VALUES (${this.id}, ${buffer}, unixepoch()) RETURNING id`!
-      .id as number;
+    return db.get<CharacterRow>`INSERT INTO character(user_id, uuid, last_seen) VALUES (${this.id}, ${buffer}, unixepoch()) RETURNING id`!
+      .id;
   }
 }

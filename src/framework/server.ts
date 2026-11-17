@@ -20,7 +20,7 @@ oxmysql.ready(async () => {
 async function loadUser(playerId: number, identifier: string | number) {
   await oxmysql.awaitConnection();
 
-  const user = User.Registry.get(playerId);
+  const user = User.fromPlayerId(playerId);
 
   if (!user) return;
 

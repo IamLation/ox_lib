@@ -1,15 +1,22 @@
 import { KvpStore } from "./kvp";
 
+/**
+ * A persistent identity associated with a user. Multiple characters can exist for a single user.
+ */
 export class Character {
-  static Kvp = new KvpStore("character", "char_id");
+  private static kvp = new KvpStore("character", "char_id");
 
-  constructor(public id: number) {}
+  constructor(
+    readonly id: number,
+    readonly userId: number,
+    readonly uuid: string,
+  ) {}
 
   set(key: string, value: any) {
-    return Character.Kvp.set(this.id, key, value);
+    return Character.kvp.set(this.id, key, value);
   }
 
   get(...keys: string[]) {
-    return Character.Kvp.get(this.id, ...keys);
+    return Character.kvp.get(this.id, ...keys);
   }
 }

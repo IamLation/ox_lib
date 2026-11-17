@@ -1,20 +1,8 @@
-/**
- * Experimental user management for ox_lib
- * Currently intended for internal use only
- */
-
 import "./sqlite";
 import { User } from "./user";
 import "framework";
 
-on("playerJoining", () => new User(source));
-on("playerDropped", () => User.Registry.delete(source));
+on("playerJoining", () => User.fromPlayerId(+source));
+on("playerDropped", () => User.fromPlayerId(+source).setOffline());
 
-setTimeout(
-  () =>
-    getPlayers().forEach((playerId) => {
-      const user = new User(+playerId);
-      user.setCharacter(-1);
-    }),
-  100,
-);
+setTimeout(() => getPlayers().forEach((playerId) => User.fromPlayerId(+playerId).setCharacter(-1)), 500);
