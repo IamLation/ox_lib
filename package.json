@@ -20,6 +20,10 @@
     "webdev": "cd web && nub run dev --outDir ../dist/web --emptyOutDir",
     "webbuild": "cd web && nub run build --outDir ../dist/web --emptyOutDir"
   },
+  "dependencies": {
+    "@overextended/oxmysql": "^2.14.3",
+    "lru.min": "^1.1.5"
+  },
   "devDependencies": {
     "@citizenfx/client": "latest",
     "@citizenfx/server": "latest",
@@ -34,9 +38,5 @@
   },
   "engines": {
     "node": ">=22.22.0"
-  },
-  "dependencies": {
-    "@overextended/oxmysql": "^2.14.3",
-    "lru.min": "^1.1.5"
   }
 }
