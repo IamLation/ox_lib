@@ -1,7 +1,7 @@
-import { Box, Slider, Text } from '@mantine/core';
-import { ISlider } from '../../../../typings/dialog';
-import { Control, useController } from 'react-hook-form';
-import { FormValues } from '../../InputDialog';
+import { Box, Slider, Text } from "@mantine/core";
+import { ISlider } from "../../../../typings/dialog";
+import { Control, useController } from "react-hook-form";
+import { FormValues } from "../../InputDialog";
 
 interface Props {
   row: ISlider;
