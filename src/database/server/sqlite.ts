@@ -29,6 +29,25 @@ export function decode<T extends Row>(value: string) {
   return JSON.parse(value) as T;
 }
 
+function uuidToBuffer(uuid: SQLOutputValue): Buffer {
+  if (typeof uuid !== "string") {
+    throw new TypeError(`UUID must be a string.`);
+  }
+
+  return Buffer.from(uuid.replaceAll("-", ""), "hex");
+}
+
+function uuidFromBuffer(arr: SQLOutputValue): string {
+  if (!(arr instanceof Uint8Array) || arr.byteLength !== 16) {
+    throw new TypeError("UUID must be a 16-byte Uint8Array");
+  }
+
+  const buffer = Buffer.from(arr);
+  const hex = buffer.toString("hex");
+
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 class Connection {
   private cache = createLRU<string, StatementSync>({ max: 100 });
   private connection: DatabaseSync;
@@ -42,18 +61,19 @@ class Connection {
         PRAGMA cache_size = -8192;
         PRAGMA foreign_keys = ON;
       `);
-
-      return;
+    } else {
+      this.connection.exec(`
+        PRAGMA journal_mode = WAL;
+        PRAGMA synchronous = NORMAL;
+        PRAGMA journal_size_limit = 16777216;
+        PRAGMA mmap_size = 134217728;
+        PRAGMA cache_size = -8192;
+        PRAGMA foreign_keys = ON;
+      `);
     }
 
-    this.connection.exec(`
-      PRAGMA journal_mode = WAL;
-      PRAGMA synchronous = NORMAL;
-      PRAGMA journal_size_limit = 16777216;
-      PRAGMA mmap_size = 134217728;
-      PRAGMA cache_size = -8192;
-      PRAGMA foreign_keys = ON;
-    `);
+    this.connection.function("uuid_to_blob", { deterministic: true }, uuidToBuffer);
+    this.connection.function("uuid_from_blob", { deterministic: true }, uuidFromBuffer);
   }
 
   private prepare(query: string | TemplateStringsArray) {

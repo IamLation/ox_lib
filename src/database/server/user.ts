@@ -13,7 +13,7 @@ function GetPlayerLicense(playerId: string | number) {
 
   if (SV_LAN) {
     const hash = GetHashKey(GetPlayerIdentifierByType(playerId as string, "ip"));
-    return `temp${hash.toString(16).padStart(36, "0")}}`;
+    return `temp${hash.toString(16).padStart(36, "0")}`;
   }
 
   throw new Error(`player:${playerId} has no valid license.`);
@@ -66,6 +66,8 @@ export class User {
       (token) =>
         db.run`INSERT OR IGNORE INTO user_tokens (user_id, token, last_seen) VALUES (${this.id}, ${token}, unixepoch())`,
     );
+
+    $DEBUG: console.debug(`Set User:${this.id} as online.`);
   }
 
   public setOffline() {
@@ -73,6 +75,8 @@ export class User {
 
     User.active.delete(this.license);
     User.playerIds.delete(this.playerId);
+
+    $DEBUG: console.debug(`Set User:${this.id} as offline.`);
   }
 
   public set(key: string, value: any) {
@@ -85,8 +89,9 @@ export class User {
 
   public setCharacter(charId: number | string): Character | null {
     if (typeof charId === "string") {
-      const buffer = Buffer.from(charId.replaceAll("-", ""), "hex");
-      const id = (db.get`SELECT id FROM character WHERE uuid = ${buffer}`?.id as number) ?? this.addCharacter(charId);
+      const id =
+        (db.get`SELECT id FROM character WHERE uuid = uuid_to_blob(${charId})`?.id as number) ??
+        this.addCharacter(charId);
 
       return this.setCharacter(id);
     } else if (charId === -1) {
@@ -104,20 +109,21 @@ export class User {
 
     this.character = new Character(character.id, character.user_id, character.uuid);
 
+    $DEBUG: console.debug(`Set Character:${character.id} (uuid: ${character.uuid}) as active for User:${this.id}.`);
+
     return this.character;
   }
 
   public getCharacter(charId: number) {
-    return db.get<CharacterRow>`SELECT * FROM character WHERE user_id = ${this.id} AND id = ${charId}`;
+    return db.get<CharacterRow>`SELECT *, uuid_from_blob(uuid) as uuid FROM character WHERE user_id = ${this.id} AND id = ${charId}`;
   }
 
   public getCharacters() {
-    return db.all<CharacterRow>`SELECT * FROM character WHERE user_id = ${this.id}`;
+    return db.all<CharacterRow>`SELECT *, uuid_from_blob(uuid) as uuid FROM character WHERE user_id = ${this.id}`;
   }
 
   public addCharacter(uuid: string) {
-    const buffer = Buffer.from(uuid.replaceAll("-", ""), "hex");
-    return db.get<CharacterRow>`INSERT INTO character(user_id, uuid, last_seen) VALUES (${this.id}, ${buffer}, unixepoch()) RETURNING id`!
+    return db.get<CharacterRow>`INSERT INTO character(user_id, uuid, last_seen) VALUES (${this.id}, uuid_to_blob(${uuid}), unixepoch()) RETURNING id`!
       .id;
   }
 }
