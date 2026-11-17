@@ -1,8 +1,11 @@
-import { uuid } from "@overextended/ox_lib/common/uuid";
+import { uuid as UUID } from "@overextended/ox_lib/common/uuid";
 import { Character } from "./character";
 import { KvpStore } from "./kvp";
 import { db, type UserRow, type CharacterRow } from "./sqlite";
 import { createLRU } from "lru.min";
+import { SELECT_UUID, UPDATE_UUID } from "framework";
+import { framework } from "framework/common";
+import { oxmysql } from "@overextended/oxmysql";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
@@ -36,6 +39,27 @@ export class User {
     return User.playerIds.get(playerId) || new User(GetPlayerLicense(playerId), playerId);
   }
 
+  static async fromFramework(playerId: number, identifier: string | number) {
+    await oxmysql.awaitConnection();
+
+    const user = User.fromPlayerId(playerId);
+
+    if (!user) return;
+
+    let uuid: string | null = await oxmysql.scalar(SELECT_UUID, [identifier]);
+
+    if (!uuid) {
+      await oxmysql.update(UPDATE_UUID, [UUID.generate(), identifier]);
+      uuid = await oxmysql.scalar(SELECT_UUID, [identifier]);
+
+      $DEBUG: console.debug(`Generated UUID ${uuid} for ${framework.name} character (${identifier}).`);
+    }
+
+    if (!uuid) return;
+
+    user.setCharacter(uuid);
+  }
+
   public id: number;
   public character?: Character;
 
@@ -67,16 +91,18 @@ export class User {
         db.run`INSERT OR IGNORE INTO user_tokens (user_id, token, last_seen) VALUES (${this.id}, ${token}, unixepoch())`,
     );
 
-    $DEBUG: console.debug(`Set User:${this.id} as online.`);
+    $DEBUG: console.debug(`Player<${playerId}> has loaded User<${this.id}>.`);
   }
 
   public setOffline() {
     if (!this.playerId) return;
 
+    $DEBUG: console.debug(`Player<${this.playerId}> is now offline. User<${this.id}> will be unloaded.`);
+
     User.active.delete(this.license);
     User.playerIds.delete(this.playerId);
 
-    $DEBUG: console.debug(`Set User:${this.id} as offline.`);
+    delete this.playerId;
   }
 
   public set(key: string, value: any) {
@@ -101,15 +127,15 @@ export class User {
       return this.setCharacter(id);
     }
 
-    if (!charId) return this.setCharacter(this.addCharacter(uuid.generate()));
+    if (!charId) return this.setCharacter(this.addCharacter(UUID.generate()));
 
     const character = this.getCharacter(charId);
 
-    if (!character) throw new Error(`user:${this.id} does not own character:${charId}.`);
+    if (!character) throw new Error(`User<${this.id}> does not own Character<${charId}>.`);
 
     this.character = new Character(character.id, character.user_id, character.uuid);
 
-    $DEBUG: console.debug(`Set Character:${character.id} (uuid: ${character.uuid}) as active for User:${this.id}.`);
+    $DEBUG: console.debug(`Set Character<${character.id}> (${character.uuid}) as active for User<${this.id}>.`);
 
     return this.character;
   }
