@@ -31,7 +31,13 @@ const config: Record<string, UserConfig> = {
   },
 };
 
+const watchMode = process.argv[2] === "--watch";
+
 function createConfig(name: string): UserConfig {
+  const dropLabels = [name === "client" ? "$SERVER" : "$CLIENT"];
+
+  if (!watchMode) dropLabels.push("$DEBUG");
+
   return {
     name,
     entry: {
@@ -40,6 +46,9 @@ function createConfig(name: string): UserConfig {
     tsconfig: `./tsconfig.${name}.json`,
     ...config.resource,
     ...config[name],
+    inputOptions: {
+      transform: { dropLabels },
+    },
     onSuccess: postBuild,
   };
 }
