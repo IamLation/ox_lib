@@ -6,6 +6,7 @@ import { createLRU } from "lru.min";
 import { SELECT_UUID, UPDATE_UUID } from "framework";
 import { oxmysql } from "@overextended/oxmysql";
 import { framework } from "framework/common";
+import { cfxExport } from "@overextended/ox_lib/common/exports";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
@@ -91,18 +92,20 @@ export class User {
         db.run`INSERT OR IGNORE INTO user_tokens (user_id, token, last_seen) VALUES (${this.id}, ${token}, unixepoch())`,
     );
 
-    $DEBUG: console.debug(`Player<${playerId}> has loaded User<${this.id}>.`);
+    emit("userSessionStart", playerId, this.id);
   }
 
   public setOffline() {
     if (!this.playerId) return;
 
-    $DEBUG: console.debug(`Player<${this.playerId}> is now offline. User<${this.id}> will be unloaded.`);
+    if (this.character) this.setCharacter(null);
 
-    User.active.delete(this.license);
-    User.playerIds.delete(this.playerId);
-
+    const playerId = this.playerId;
     delete this.playerId;
+
+    emit("userSessionEnd", playerId, this.id);
+    User.active.delete(this.license);
+    User.playerIds.delete(playerId);
   }
 
   public set(key: string, value: any) {
@@ -113,8 +116,18 @@ export class User {
     return User.kvp.get(this.id, ...keys);
   }
 
-  public setCharacter(charId: number | string): Character | null {
-    if (typeof charId === "string") {
+  public setCharacter(charId: number | string | null): Character | null {
+    if (!charId) {
+      const character = this.character;
+
+      if (!character) return null;
+
+      emit("characterUnloaded", this.playerId, this.id, character.id);
+
+      delete this.character;
+
+      return null;
+    } else if (typeof charId === "string") {
       const id =
         (db.get`SELECT id FROM character WHERE uuid = uuid_to_blob(${charId})`?.id as number) ??
         this.addCharacter(charId);
@@ -134,8 +147,7 @@ export class User {
     if (!character) throw new Error(`User<${this.id}> does not own Character<${charId}>.`);
 
     this.character = new Character(character.id, character.user_id, character.uuid);
-
-    $DEBUG: console.debug(`Set Character<${character.id}> (${character.uuid}) as active for User<${this.id}>.`);
+    emit("characterLoaded", this.playerId, this.id, character.id);
 
     return this.character;
   }
@@ -153,3 +165,6 @@ export class User {
       .id;
   }
 }
+
+cfxExport("getUserFromLicense", (license: string) => User.fromLicense(license));
+cfxExport("getUserfromPlayerId", (playerId: number) => User.fromPlayerId(+playerId));
