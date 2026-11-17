@@ -3,12 +3,7 @@ import { framework } from "./common";
 import { uuid as UUID } from "@overextended/ox_lib/common/uuid";
 import { User } from "../database/server/user";
 
-const tables = {
-  es_extended: ["users", "identifier"],
-  qbx_core: ["players", "citizenid"],
-} as const;
-
-const [USER_TABLE, IDENTIFIER_COLUMN] = tables[framework as keyof typeof tables] ?? [];
+const [USER_TABLE, IDENTIFIER_COLUMN] = framework.db;
 const SELECT_UUID = `SELECT uuid FROM \`${USER_TABLE}\` WHERE \`${IDENTIFIER_COLUMN}\` = ? LIMIT 1`;
 const UPDATE_UUID = `UPDATE \`${USER_TABLE}\` SET uuid = ? WHERE \`${IDENTIFIER_COLUMN}\` = ?`;
 
