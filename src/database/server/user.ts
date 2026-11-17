@@ -4,8 +4,8 @@ import { KvpStore } from "./kvp";
 import { db, type UserRow, type CharacterRow } from "./sqlite";
 import { createLRU } from "lru.min";
 import { SELECT_UUID, UPDATE_UUID } from "framework";
-import { framework } from "framework/common";
 import { oxmysql } from "@overextended/oxmysql";
+import { framework } from "framework/common";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 

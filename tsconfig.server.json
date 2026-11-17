@@ -3,7 +3,7 @@
   "compilerOptions": {
     "types": ["node", "@citizenfx/server"],
     "paths": {
-      "*/common": ["./src/*/common/"],
+      "*/common": ["./src/*/common/", "./src/*/common.ts"],
       "common/*": ["./src/common/*"],
       "*": ["./src/*/server/", "./src/*/server.ts"],
       "@overextended/ox_lib/*": ["./package/*"]
