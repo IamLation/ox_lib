@@ -57,6 +57,13 @@ local function triggerStateChangeHandlers(bag, key, value)
     end
 end
 
+---Returns a cached player instance or creates a new one.
+function Player.fromId(netId)
+    if netId == -1 then netId = isServer and tonumber(GetPlayerFromIndex(0)) or cache.serverId end
+
+    return players[netId]
+end
+
 ---@param key string
 ---@param handler fun(player: Player, key: string, value?: unknown, old?: unknown)
 ---@return fun() unsubscribe
@@ -98,6 +105,8 @@ end
 
 ---@class PlayerConstructor
 ---@overload fun(self: Player, netId: number): Player
+---@private
+---@see Player.fromId
 function Player:constructor(netId)
     if netId == -1 then netId = isServer and tonumber(GetPlayerFromIndex(0)) or cache.serverId end
 
@@ -136,7 +145,7 @@ function Player:setRoutingBucket(bucket)
 end
 
 if not isServer then
-    Player.Local = Player:new(-1)
+    Player.Local = Player.fromId(-1)
 end
 
 return Player

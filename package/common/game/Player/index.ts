@@ -15,21 +15,6 @@ const stateChangeHandlers = new Map<
   }
 >();
 
-/** Returns the cached player wrapper or creates one for the supplied id. */
-function getPlayer(id: number) {
-  let player = players.get(id)?.deref();
-
-  if (!player) {
-    player = new Player(id);
-    const ref = new WeakRef(player);
-
-    players.set(id, ref);
-    registry.register(player, id, ref);
-  }
-
-  return player;
-}
-
 /** Dispatches player state changes with the new value and the previous bag value. */
 function triggerStateChangeHandlers(bag: string, key: string, value: unknown) {
   if (!bag.startsWith('player:')) return;
@@ -46,7 +31,7 @@ function triggerStateChangeHandlers(bag: string, key: string, value: unknown) {
 
   if (!handlers) return;
 
-  const player = getPlayer(serverId);
+  const player = Player.fromId(serverId);
   const old = GetStateBagValue(bag, key);
   const subscriptions = [...handlers.subscriptions];
 
@@ -61,8 +46,29 @@ export class Player extends Ped {
   /** The player's server id. */
   readonly netId: number = 0;
 
+  static readonly Local = (isServer ? null : this.fromId(-1))!;
+
+  /**
+   * Returns a cached player instance or creates a new one.
+   */
+  public static fromId(netId: number) {
+    if (netId === -1) netId = isServer ? Number(GetPlayerFromIndex(0)) : GetPlayerServerId(PlayerId());
+
+    let player = players.get(netId)?.deref();
+
+    if (!player) {
+      player = new Player(netId);
+      const ref = new WeakRef(player);
+
+      players.set(netId, ref);
+      registry.register(player, netId, ref);
+    }
+
+    return player;
+  }
+
   /** Registers a player state callback and returns a function that unsubscribes it. */
-  static on<T = unknown>(key: string, handler: StateChangeHandler<T>): () => void {
+  public static on<T = unknown>(key: string, handler: StateChangeHandler<T>): () => void {
     let handlers = stateChangeHandlers.get(key);
 
     if (!handlers) {
@@ -84,8 +90,12 @@ export class Player extends Ped {
     };
   }
 
-  /** Wraps a player server id, using the local client or first server player for -1. */
-  constructor(netId: number) {
+  /**
+   * @see {@link Player.fromId}
+   * @internal
+   * Creates a new Player reference from a player's server id. A value of `-1` references the local player or first player on the server.
+   */
+  private constructor(netId: number) {
     if (netId === -1) netId = isServer ? Number(GetPlayerFromIndex(0)) : GetPlayerServerId(PlayerId());
 
     const playerId = isServer ? netId : GetPlayerFromServerId(netId);
