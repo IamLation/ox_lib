@@ -37,7 +37,19 @@ export class User {
   }
 
   static fromPlayerId(playerId: number) {
-    return User.playerIds.get(playerId) || new User(GetPlayerLicense(playerId), playerId);
+    let user = User.playerIds.get(playerId);
+
+    if (user) return user;
+
+    const license = GetPlayerLicense(playerId);
+    user = User.cache.get(license);
+
+    if (user) {
+      user.setOnline(playerId);
+      return user;
+    }
+
+    return new User(license, playerId);
   }
 
   static async fromFramework(playerId: number, identifier: string | number) {
