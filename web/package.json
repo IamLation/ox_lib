@@ -1,8 +1,14 @@
 {
   "name": "ox_lib",
   "version": "0.1.0",
-  "homepage": "web/build",
   "private": true,
+  "homepage": "web/build",
+  "scripts": {
+    "start": "vite",
+    "start:game": "vite build --watch",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@fortawesome/fontawesome-svg-core": "^6.3.0",
@@ -29,12 +35,6 @@
     "vite": "^5.1.8",
     "web-vitals": "^2.1.4"
   },
-  "scripts": {
-    "start": "vite",
-    "start:game": "vite build --watch",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
   "devDependencies": {
     "@babel/core": ">=7.0.0 <8.0.0",
     "@babel/plugin-syntax-flow": "^7.14.5",
@@ -49,8 +49,5 @@
     "postcss": "^8.4.31",
     "prop-types": "^15.8.1",
     "rimraf": "^3.0.2"
-  },
-  "patchedDependencies": {
-    "react-hot-toast@2.5.2": "patches/react-hot-toast@2.5.2.patch"
   }
 }
