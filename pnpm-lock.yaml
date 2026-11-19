@@ -14,19 +14,25 @@ importers:
       lru.min:
         specifier: ^1.1.5
         version: 1.1.5
+      semver:
+        specifier: ^7.8.6
+        version: 7.8.6
     devDependencies:
       '@citizenfx/client':
         specifier: latest
-        version: 2.0.38621-1
+        version: 2.0.38781-1
       '@citizenfx/server':
         specifier: latest
-        version: 2.0.38621-1
+        version: 2.0.38781-1
       '@nubjs/types':
         specifier: '>=0.4.13 <=0.9.7'
         version: 0.9.7(@types/node@22.20.5)
       '@types/node':
         specifier: ^22
         version: 22.20.5
+      '@types/semver':
+        specifier: ^7.8.0
+        version: 7.8.0
       fast-glob:
         specifier: ^3.3.3
         version: 3.3.3
@@ -48,11 +54,11 @@ importers:
 
 packages:
 
-  '@citizenfx/client@2.0.38621-1':
-    resolution: {integrity: sha512-aneJlHWdNA+Y3XD6d+kLyGl4zp21LBHq6p9WaK5JUqZJzDk7USW4DTgADGswsm1pwp3aeD5frDesx1I3ROvdjw==}
+  '@citizenfx/client@2.0.38781-1':
+    resolution: {integrity: sha512-MzWV1m7xzFHL+g359vHqFa+99w6J4bGU8zNUxNwQCRxcFo+a1MZhKfHF8622GdGbWp9nyPsq02T9QPoMU6DCSw==}
 
-  '@citizenfx/server@2.0.38621-1':
-    resolution: {integrity: sha512-XtPcr6k85Lz1DS2pljboYGiobAcRkuL6WYEhfkwMwi7nf5YxHxzjtWtxPWLGuTrXAu4fNxYFFJ6jxmZlFHOipg==}
+  '@citizenfx/server@2.0.38781-1':
+    resolution: {integrity: sha512-kO08NkspRPP0r5KU9GKEKBrPVGp11b7uzWhEmrMxRaH7CN4sTNcxZpBE8LsuiBptUAXh36HR4ISiGFuUtMSJIQ==}
 
   '@emnapi/core@2.0.0-beta.2':
     resolution: {integrity: sha512-MzCVoWtcg4Pm2B3je5mMvYMvj3MmBKw+fU7vbsJc9/iT8ip6/eYIHo/Dsm/mr+wsHB6SEyJDuxB09Yy6r/8+4A==}
@@ -460,6 +466,9 @@ packages:
   '@types/node@22.20.5':
     resolution: {integrity: sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==}
 
+  '@types/semver@7.8.0':
+    resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
+
   '@typescript/typescript-aix-ppc64@7.0.2':
     resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
     engines: {node: '>=16.20.0'}
@@ -777,6 +786,11 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
+  semver@7.8.6:
+    resolution: {integrity: sha512-9lpSSU4Mly3mrtruwLs1eLK6+gzbzqeBFwRNjIjE+9LuDpWdYctrQlQ3ej1Ilgi7gknpsTRnPoLP8DpCHqHIJw==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   tinyexec@1.3.1:
     resolution: {integrity: sha512-GCvB3aoys96IuDFBMcTB46JOR6mdMtAToqwiW8JlWhsoh1mhHi/xn9ss/Dg7N555GiJyEt2qzoG/NHCwM6h1EA==}
     engines: {node: '>=18'}
@@ -869,9 +883,9 @@ packages:
 
 snapshots:
 
-  '@citizenfx/client@2.0.38621-1': {}
+  '@citizenfx/client@2.0.38781-1': {}
 
-  '@citizenfx/server@2.0.38621-1': {}
+  '@citizenfx/server@2.0.38781-1': {}
 
   '@emnapi/core@2.0.0-beta.2(@emnapi/runtime@2.0.0-beta.2)':
     dependencies:
@@ -1099,6 +1113,8 @@ snapshots:
   '@types/node@22.20.5':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/semver@7.8.0': {}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
@@ -1336,6 +1352,8 @@ snapshots:
   run-parallel@1.2.0:
     dependencies:
       queue-microtask: 1.2.3
+
+  semver@7.8.6: {}
 
   tinyexec@1.3.1: {}
 

@@ -1,6 +1,7 @@
 import "./common";
 import "database";
 import "anticheese";
+import "version";
 import { RemoteClassConsumer } from "@overextended/ox_lib/common";
 
 $DEBUG: {
