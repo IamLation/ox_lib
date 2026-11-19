@@ -1,4 +1,4 @@
-import { KvpStore } from "./kvp";
+import { KvpStore } from "../../database/server/kvp";
 
 /**
  * A persistent identity associated with a user. Multiple characters can exist for a single user.

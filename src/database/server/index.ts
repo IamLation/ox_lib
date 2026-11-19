@@ -1,23 +1,21 @@
 import { sleep, waitFor } from "@overextended/ox_lib/common";
 import "./sqlite";
-import { User } from "./user";
+import { User } from "../../classes/user/server";
 import "framework";
 
 on("playerJoining", async () => {
-  const playerId = +source as any;
+  const playerSource = String(source);
 
   await sleep(20000);
 
   const joined = await waitFor(() => {
-    if (!DoesPlayerExist(playerId)) return false;
-    if (GetPlayerPed(playerId)) return true;
-  }, 500);
+    if (!DoesPlayerExist(playerSource)) return false;
+    if (GetPlayerPed(playerSource)) return true;
+  }, 500).catch(() => false);
 
-  if (!joined) return;
-
-  User.fromPlayerId(playerId);
+  if (joined) User.fromPlayerId(+playerSource);
 });
 
-on("playerDropped", () => User.fromPlayerId(+source).setOffline());
+on("playerDropped", () => User.getOnline(+source)?.setOffline());
 
 setTimeout(() => getPlayers().forEach((playerId) => User.fromPlayerId(+playerId).setCharacter(-1)), 500);

@@ -1,6 +1,6 @@
 import { oxmysql } from "@overextended/oxmysql";
 import { framework } from "./common";
-import { User } from "../database/server/user";
+import { User } from "../classes/user/server";
 
 const [USER_TABLE, IDENTIFIER_COLUMN] = framework.db;
 

@@ -1,13 +1,12 @@
 import { uuid as UUID } from "@overextended/ox_lib/common/uuid";
-import { Character } from "./character";
-import { KvpStore } from "./kvp";
-import { db, type UserRow, type CharacterRow } from "./sqlite";
-import { createLRU } from "lru.min";
+import { Character } from "../character/server";
+import { KvpStore } from "../../database/server/kvp";
+import { db, type UserRow, type CharacterRow } from "../../database/server/sqlite";
 import { SELECT_UUID, UPDATE_UUID } from "framework";
 import { oxmysql } from "@overextended/oxmysql";
 import { framework } from "framework/common";
 import { cfxExport } from "@overextended/ox_lib/common/exports";
-import { Player } from "@overextended/ox_lib/common";
+import { Player, Remote, RemoteClassProvider } from "@overextended/ox_lib/common";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
@@ -27,40 +26,73 @@ function GetPlayerLicense(playerId: string | number) {
 /**
  * A persistent account associated with a player's game license.
  */
-export class User {
-  private static cache = createLRU<string, User>({ max: 100 });
+export class User extends RemoteClassProvider {
   private static active = new Map<string, User>();
   private static playerIds = new Map<number, User>();
   private static kvp = new KvpStore("user");
 
-  static fromLicense(license: string) {
-    return User.active.get(license) || User.cache.get(license) || new User(license);
-  }
+  static override fromId(id: string | number) {
+    const userId = Number(id);
 
-  static fromPlayerId(playerId: number) {
-    let user = User.playerIds.get(playerId);
+    if (!Number.isSafeInteger(userId) || userId < 1) throw new Error(`Invalid User identifier '${id}'.`);
+
+    const user = User.getCached(userId);
 
     if (user) return user;
 
-    const license = GetPlayerLicense(playerId);
-    user = User.cache.get(license);
+    const license = db.get<{ license: string }>`
+      SELECT license FROM user WHERE id = ${userId}
+    `?.license;
 
-    if (user) {
-      user.setOnline(playerId);
-      return user;
-    }
+    if (!license) throw new Error(`User<${id}> does not exist.`);
 
-    return new User(license, playerId);
+    return User.load(license);
+  }
+
+  static fromLicense(license: string) {
+    const active = User.active.get(license);
+
+    if (active) return active;
+
+    const id = db.get<{ id: number }>`SELECT id FROM user WHERE license = ${license}`?.id;
+
+    return (id === undefined ? undefined : User.getCached(id)) ?? User.load(license);
+  }
+
+  private static load(license: string) {
+    const { id } = db.get<UserRow>`
+      INSERT INTO user (license, last_seen) VALUES (${license}, unixepoch())
+      ON CONFLICT (license) DO UPDATE SET last_seen = unixepoch()
+      RETURNING id
+    `!;
+
+    return User.intern(id, () => new User(license, id));
+  }
+
+  static fromPlayerId(playerId: number) {
+    if (!Number.isSafeInteger(playerId) || playerId < 1) throw new Error(`Invalid player ID '${playerId}'.`);
+
+    const online = User.getOnline(playerId);
+
+    if (online) return online;
+
+    const user = User.fromLicense(GetPlayerLicense(playerId));
+    user.setOnline(playerId);
+    return user;
+  }
+
+  static getOnline(playerId: number) {
+    return User.playerIds.get(playerId);
   }
 
   static async fromFramework(playerId: number, identifier: string | number) {
-    await oxmysql.awaitConnection();
-
     const user = User.fromPlayerId(playerId);
 
-    if (!user) return;
+    await oxmysql.awaitConnection();
+    if (User.getOnline(playerId) !== user) return;
 
     let uuid: string | null = await oxmysql.scalar(SELECT_UUID, [identifier]);
+    if (User.getOnline(playerId) !== user) return;
 
     if (!uuid) {
       await oxmysql.update(UPDATE_UUID, [UUID.generate(), identifier]);
@@ -69,36 +101,27 @@ export class User {
       $DEBUG: console.debug(`Generated UUID ${uuid} for ${framework.name} character (${identifier}).`);
     }
 
-    if (!uuid) return;
+    if (!uuid || User.getOnline(playerId) !== user) return;
 
     user.setCharacter(uuid);
   }
 
-  public id: number;
+  @Remote("id")
+  public readonly id: number;
+  @Remote
+  public readonly license: string;
   public character?: Character;
+  public playerId?: number;
 
-  constructor(
-    public license: string,
-    public playerId?: number,
-  ) {
-    const { id } = db.get<UserRow>`
-      INSERT INTO user (license, last_seen) VALUES (${license}, unixepoch())
-      ON CONFLICT (license) DO UPDATE SET last_seen = unixepoch()
-      RETURNING id
-    `!;
-
+  private constructor(license: string, id: number) {
+    super();
     this.id = id;
-
-    if (playerId) this.setOnline(playerId);
-    else this.setOffline();
+    this.license = license;
   }
 
   public setOnline(playerId: number) {
-    this.playerId = playerId;
-
-    User.cache.delete(this.license);
-    User.active.set(this.license, this);
-    User.playerIds.set(this.playerId, this);
+    if (!Number.isSafeInteger(playerId) || playerId < 1) throw new Error(`Invalid player ID '${playerId}'.`);
+    if (this.playerId === playerId) return;
 
     getPlayerTokens(playerId).forEach(
       (token) =>
@@ -106,28 +129,51 @@ export class User {
     );
 
     const player = Player.fromId(playerId);
-    player.setr("userId", this.id);
 
-    emit("userSessionStart", playerId, this.id);
+    this.setOffline();
+    const previous = User.getOnline(playerId);
+    if (previous !== this) previous?.setOffline();
+
+    if (this.playerId === playerId) return;
+    if (this.playerId !== undefined || User.getOnline(playerId)) {
+      throw new Error(`Session changed while setting User<${this.id}> online for player ${playerId}.`);
+    }
+
+    this.playerId = playerId;
+    User.active.set(this.license, this);
+    User.playerIds.set(playerId, this);
+
+    void player.setr("userId", this.id).catch(console.error);
+
+    if (User.getOnline(playerId) === this) emit("userSessionStart", playerId, this.id);
   }
 
   public setOffline() {
-    if (!this.playerId) return;
+    const { playerId, character } = this;
 
-    if (this.character) this.setCharacter(null);
+    if (playerId === undefined) return;
 
-    const playerId = this.playerId;
     delete this.playerId;
+    delete this.character;
+    if (User.active.get(this.license) === this) User.active.delete(this.license);
+    if (User.getOnline(playerId) === this) User.playerIds.delete(playerId);
+
+    if (character) emit("characterUnloaded", playerId, this.id, character.id);
 
     emit("userSessionEnd", playerId, this.id);
-    User.active.delete(this.license);
-    User.playerIds.delete(playerId);
   }
 
+  @Remote
+  public say(msg: string) {
+    console.log(`${this.id} says ${msg}`);
+  }
+
+  @Remote
   public set(key: string, value: any) {
     return User.kvp.set(this.id, key, value);
   }
 
+  @Remote
   public get(...keys: string[]) {
     return User.kvp.get(this.id, ...keys);
   }
@@ -140,9 +186,8 @@ export class User {
 
       if (!character) return null;
 
-      emit("characterUnloaded", this.playerId, this.id, character.id);
-
       delete this.character;
+      emit("characterUnloaded", this.playerId, this.id, character.id);
 
       return null;
     } else if (typeof charId === "string") {
@@ -164,15 +209,16 @@ export class User {
 
     if (!character) throw new Error(`User<${this.id}> does not own Character<${charId}>.`);
 
-    this.character = new Character(character.id, character.user_id, character.uuid);
-
     const player = Player.fromId(this.playerId);
-    player.sets("uuid", character.uuid);
-    player.setr("charId", character.id);
+    const instance = new Character(character.id, character.user_id, character.uuid);
+    this.character = instance;
+
+    void player.sets("uuid", character.uuid).catch(console.error);
+    void player.setr("charId", character.id).catch(console.error);
 
     emit("characterLoaded", this.playerId, this.id, character.id);
 
-    return this.character;
+    return instance;
   }
 
   public getCharacter(charId: number) {
@@ -188,6 +234,8 @@ export class User {
       .id;
   }
 }
+
+User.register();
 
 cfxExport("getUserFromLicense", (license: string) => User.fromLicense(license));
 cfxExport("getUserfromPlayerId", (playerId: number) => User.fromPlayerId(+playerId));
