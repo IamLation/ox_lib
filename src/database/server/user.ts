@@ -7,6 +7,7 @@ import { SELECT_UUID, UPDATE_UUID } from "framework";
 import { oxmysql } from "@overextended/oxmysql";
 import { framework } from "framework/common";
 import { cfxExport } from "@overextended/ox_lib/common/exports";
+import { Player } from "@overextended/ox_lib/common";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
@@ -104,6 +105,9 @@ export class User {
         db.run`INSERT OR IGNORE INTO user_tokens (user_id, token, last_seen) VALUES (${this.id}, ${token}, unixepoch())`,
     );
 
+    const player = Player.fromId(playerId);
+    player.setr("userId", this.id);
+
     emit("userSessionStart", playerId, this.id);
   }
 
@@ -129,6 +133,8 @@ export class User {
   }
 
   public setCharacter(charId: number | string | null): Character | null {
+    if (!this.playerId) throw new Error(`Cannot set character for offline users.`);
+
     if (!charId) {
       const character = this.character;
 
@@ -159,6 +165,11 @@ export class User {
     if (!character) throw new Error(`User<${this.id}> does not own Character<${charId}>.`);
 
     this.character = new Character(character.id, character.user_id, character.uuid);
+
+    const player = Player.fromId(this.playerId);
+    player.sets("uuid", character.uuid);
+    player.setr("charId", character.id);
+
     emit("characterLoaded", this.playerId, this.id, character.id);
 
     return this.character;
