@@ -14,6 +14,7 @@ export * from './math';
 export * from './vector';
 export * from './geometry';
 export * from './grid';
+export * from './remote-class';
 
 export interface VehicleProperties {
   model?: string;
