@@ -1,5 +1,5 @@
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { IconAnimation } from '../components/LibIcon';
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconAnimation } from "../components/LibIcon";
 
 export interface Option {
   menu?: string;
@@ -27,7 +27,7 @@ export interface Options {
   [key: string]: Option;
 }
 
-export type ContextMenuPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type ContextMenuPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 export interface ContextMenuProps {
   title: string;

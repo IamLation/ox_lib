@@ -1,6 +1,6 @@
-import { Context, createContext, useContext, useEffect, useState } from 'react';
-import { MantineColor } from '@mantine/core';
-import { fetchNui } from '../utils/fetchNui';
+import { Context, createContext, useContext, useEffect, useState } from "react";
+import { MantineColor } from "@mantine/core";
+import { fetchNui } from "../utils/fetchNui";
 
 interface Config {
   primaryColor: MantineColor;
@@ -16,12 +16,12 @@ const ConfigCtx = createContext<{ config: Config; setConfig: (config: Config) =>
 
 const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [config, setConfig] = useState<Config>({
-    primaryColor: 'blue',
+    primaryColor: "blue",
     primaryShade: 6,
   });
 
   useEffect(() => {
-    fetchNui<Config>('getConfig').then((data) => setConfig(data));
+    fetchNui<Config>("getConfig").then((data) => setConfig(data));
   }, []);
 
   return <ConfigCtx.Provider value={{ config, setConfig }}>{children}</ConfigCtx.Provider>;
