@@ -4,7 +4,7 @@ import { User } from "./user";
 import "framework";
 
 on("playerJoining", async () => {
-  const playerId = source as any;
+  const playerId = +source as any;
 
   await sleep(20000);
 
@@ -15,7 +15,7 @@ on("playerJoining", async () => {
 
   if (!joined) return;
 
-  User.fromPlayerId(+source);
+  User.fromPlayerId(playerId);
 });
 
 on("playerDropped", () => User.fromPlayerId(+source).setOffline());

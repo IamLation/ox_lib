@@ -1,5 +1,6 @@
 import "./common";
 import "database";
+import "anticheese";
 
 $DEBUG: {
   const lib = global.exports.ox_lib as any;

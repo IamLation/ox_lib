@@ -21,7 +21,7 @@ const config: Record<string, UserConfig> = {
   client: {
     platform: "browser",
     target: "es2023",
-    format: "esm",
+    format: "iife",
   },
 
   server: {
