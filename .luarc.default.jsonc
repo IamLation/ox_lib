@@ -2,8 +2,5 @@
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
   "workspace.checkThirdParty": "Ask",
   "workspace.userThirdParty": [],
-  "diagnostics.disable": [
-    "unbalanced-assignments",
-    "lowercase-global"
-  ]
+  "diagnostics.disable": ["unbalanced-assignments", "lowercase-global"],
 }

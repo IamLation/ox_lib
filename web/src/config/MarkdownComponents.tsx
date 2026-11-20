@@ -1,5 +1,5 @@
-import { Title } from '@mantine/core';
-import { Components } from 'react-markdown';
+import { Title } from "@mantine/core";
+import { Components } from "react-markdown";
 
 const MarkdownComponents: Components = {
   h1: ({ node, ...props }) => <Title {...props} />,

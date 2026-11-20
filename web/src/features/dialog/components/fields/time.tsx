@@ -1,8 +1,8 @@
-import { TimeInput } from '@mantine/dates';
-import { Control, useController } from 'react-hook-form';
-import { ITimeInput } from '../../../../typings/dialog';
-import { FormValues } from '../../InputDialog';
-import LibIcon from '../../../../components/LibIcon';
+import { TimeInput } from "@mantine/dates";
+import { Control, useController } from "react-hook-form";
+import { ITimeInput } from "../../../../typings/dialog";
+import { FormValues } from "../../InputDialog";
+import LibIcon from "../../../../components/LibIcon";
 
 interface Props {
   row: ITimeInput;
@@ -27,7 +27,7 @@ const TimeField: React.FC<Props> = (props) => {
       label={props.row.label}
       description={props.row.description}
       disabled={props.row.disabled}
-      format={props.row.format || '12'}
+      format={props.row.format || "12"}
       withAsterisk={props.row.required}
       clearable={props.row.clearable}
       icon={props.row.icon && <LibIcon fixedWidth icon={props.row.icon} />}
