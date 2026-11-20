@@ -164,11 +164,6 @@ export class User extends RemoteClassProvider {
   }
 
   @Remote
-  public say(msg: string) {
-    console.log(`${this.id} says ${msg}`);
-  }
-
-  @Remote
   public set(key: string, value: any) {
     return User.kvp.set(this.id, key, value);
   }

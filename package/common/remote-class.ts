@@ -1,5 +1,3 @@
-import { cache } from './cache';
-
 export type RemoteIdentifier = string | number;
 
 interface RemoteMembers<T> {
@@ -14,11 +12,15 @@ export interface SerializedRef extends RemoteMembers<string[]> {
 
 type InstanceCache = Map<string, WeakRef<object>>;
 
-interface ConsumerBinding {
+interface ConsumerClass {
+  readonly name: string;
+  readonly prototype: RemoteClassConsumer;
+  readonly resource: string;
+}
+
+interface ConsumerBinding extends Pick<SerializedRef, 'identifier' | 'properties'> {
   name: string;
   resource: string;
-  identifier: SerializedRef['identifier'];
-  properties: string[];
   instances: InstanceCache;
 }
 
@@ -36,6 +38,8 @@ type RemoteRequest =
   | [operation: 'invoke_static', method: string, ...args: unknown[]];
 
 const remoteExport = '__remote_class';
+const providers = new Map<string, typeof RemoteClassProvider>();
+const consumerBindings = new WeakMap<object, ConsumerBinding>();
 const providerMetadata = new WeakMap<object, ProviderMetadata>();
 const instanceRegistry = new FinalizationRegistry<{
   cache: WeakRef<InstanceCache>;
@@ -101,10 +105,10 @@ type MemberDecorator = (target: object, key: string, descriptor?: PropertyDescri
  */
 export function Remote(option: 'id'): MemberDecorator;
 export function Remote(target: object, key: string, descriptor?: PropertyDescriptor): void;
-export function Remote(target: object | 'id', key?: string, descriptor?: PropertyDescriptor): MemberDecorator | void {
-  if (target === 'id') return (target, key, descriptor) => exposeMember(target, key, descriptor, true);
+export function Remote(...args: [option: 'id'] | Parameters<MemberDecorator>): MemberDecorator | void {
+  if (args[0] === 'id') return (target, key, descriptor) => exposeMember(target, key, descriptor, true);
 
-  exposeMember(target, key!, descriptor);
+  exposeMember(...args);
 }
 
 function exposeMember(target: object, key: string, descriptor?: PropertyDescriptor, identifier = false) {
@@ -125,13 +129,12 @@ function exposeMember(target: object, key: string, descriptor?: PropertyDescript
 
   const members = isStatic ? metadata.statics : metadata;
 
-  if (isMethod) members.methods.add(key);
-  else members.properties.add(key);
+  (isMethod ? members.methods : members.properties).add(key);
 }
 
 /** Base class for classes that expose methods and properties to other resources. */
 export abstract class RemoteClassProvider {
-  static readonly #providers = new Map<string, typeof RemoteClassProvider>();
+  static readonly resource = '';
 
   /** Looks up an instance by ID. Override this to load missing instances. */
   public static fromId(id: RemoteIdentifier): RemoteClassProvider | undefined {
@@ -161,196 +164,107 @@ export abstract class RemoteClassProvider {
       throw new Error(`${name} requires an @Remote('id') property to expose instance members.`);
     }
 
-    if (!RemoteClassProvider.#providers.size) {
-      globalThis.exports(remoteExport, RemoteClassProvider.#dispatchRemoteRequest);
+    if (!providers.size) {
+      globalThis.exports(remoteExport, dispatchRemoteRequest);
     }
 
-    RemoteClassProvider.#providers.set(name, this);
+    providers.set(name, this);
   }
+}
 
-  static #resolveInstance(
-    provider: typeof RemoteClassProvider,
-    metadata: ProviderMetadata,
-    name: string,
-    id: RemoteIdentifier,
-  ) {
-    const { identifier, instances } = metadata;
+function resolveInstance(
+  provider: typeof RemoteClassProvider,
+  metadata: ProviderMetadata,
+  name: string,
+  id: RemoteIdentifier,
+) {
+  const { identifier, instances } = metadata;
 
-    if (identifier === undefined) throw new Error(`${name} does not expose instances.`);
+  if (identifier === undefined) throw new Error(`${name} does not expose instances.`);
 
-    const key = normalizeId(id);
+  const key = normalizeId(id);
 
-    return internInstance(instances, key, () => {
-      const instance = provider.fromId(key);
+  return internInstance(instances, key, () => {
+    const instance = provider.fromId(key);
 
-      if (!instance) throw new Error(`${name} instance '${key}' not found.`);
+    if (!instance) throw new Error(`${name} instance '${key}' not found.`);
 
-      if (normalizeId(Reflect.get(instance, identifier)) !== key) {
-        throw new Error(`${name} returned a different identifier for '${key}'.`);
-      }
-
-      return instance;
-    });
-  }
-
-  static #dispatchRemoteRequest(name: string, ...request: RemoteRequest): unknown {
-    const provider = RemoteClassProvider.#providers.get(name);
-
-    if (!provider) throw new Error(`Remote class '${name}' is unavailable.`);
-
-    const metadata = getProviderMetadata(provider.prototype);
-    const { identifier, methods, properties, statics } = metadata;
-    const [operation] = request;
-
-    switch (operation) {
-      case 'refs':
-        return {
-          identifier: identifier ?? null,
-          methods: [...methods],
-          properties: [...properties],
-          statics: { methods: [...statics.methods], properties: [...statics.properties] },
-        } satisfies SerializedRef;
-      case 'read': {
-        const [, id] = request;
-        const instance = RemoteClassProvider.#resolveInstance(provider, metadata, name, id);
-
-        return Object.fromEntries([...properties].map((property) => [property, Reflect.get(instance, property)]));
-      }
-      case 'read_static': {
-        const [, property] = request;
-
-        if (!statics.properties.has(property))
-          throw new Error(`${name} does not expose static property '${property}'.`);
-
-        return Reflect.get(provider, property);
-      }
-      case 'invoke': {
-        const [, id, method, ...args] = request;
-
-        if (!methods.has(method)) throw new Error(`${name} does not expose '${method}'.`);
-
-        const instance = RemoteClassProvider.#resolveInstance(provider, metadata, name, id);
-
-        return Reflect.apply(Reflect.get(instance, method), instance, args);
-      }
-      case 'invoke_static': {
-        const [, method, ...args] = request;
-
-        if (!statics.methods.has(method)) throw new Error(`${name} does not expose static method '${method}'.`);
-
-        return Reflect.apply(Reflect.get(provider, method), provider, args);
-      }
-      default:
-        throw new Error(`Unknown remote operation '${operation}'.`);
+    if (normalizeId(Reflect.get(instance, identifier)) !== key) {
+      throw new Error(`${name} returned a different identifier for '${key}'.`);
     }
+
+    return instance;
+  });
+}
+
+function dispatchRemoteRequest(name: string, ...request: RemoteRequest): unknown {
+  const provider = providers.get(name);
+
+  if (!provider) throw new Error(`Remote class '${name}' is unavailable.`);
+
+  const metadata = getProviderMetadata(provider.prototype);
+  const { identifier, methods, properties, statics } = metadata;
+  const [operation] = request;
+
+  switch (operation) {
+    case 'refs':
+      return {
+        identifier: identifier ?? null,
+        methods: [...methods],
+        properties: [...properties],
+        statics: { methods: [...statics.methods], properties: [...statics.properties] },
+      } satisfies SerializedRef;
+    case 'read': {
+      const [, id] = request;
+      const instance = resolveInstance(provider, metadata, name, id);
+
+      return Object.fromEntries([...properties].map((property) => [property, Reflect.get(instance, property)]));
+    }
+    case 'read_static': {
+      const [, property] = request;
+
+      if (!statics.properties.has(property)) throw new Error(`${name} does not expose static property '${property}'.`);
+
+      return Reflect.get(provider, property);
+    }
+    case 'invoke': {
+      const [, id, method, ...args] = request;
+
+      if (!methods.has(method)) throw new Error(`${name} does not expose '${method}'.`);
+
+      const instance = resolveInstance(provider, metadata, name, id);
+
+      return Reflect.apply(Reflect.get(instance, method), instance, args);
+    }
+    case 'invoke_static': {
+      const [, method, ...args] = request;
+
+      if (!statics.methods.has(method)) throw new Error(`${name} does not expose static method '${method}'.`);
+
+      return Reflect.apply(Reflect.get(provider, method), provider, args);
+    }
+    default:
+      throw new Error(`Unknown remote operation '${operation}'.`);
   }
 }
 
 /** Base class for classes that use a remote provider. */
 export abstract class RemoteClassConsumer {
-  static readonly #bindings = new WeakMap<object, ConsumerBinding>();
-
-  /** Binds a consumer class to a provider. */
-  public static connect<T extends { name: string; prototype: RemoteClassConsumer }>(
-    this: T,
-    name?: string,
-    resource?: string,
-  ): T {
-    const binding = RemoteClassConsumer.#bindings.get(this.prototype);
-
-    if (binding) {
-      if ((name ?? binding.name) !== binding.name || (resource ?? binding.resource) !== binding.resource) {
-        throw new Error(`${this.name} is already bound to '${binding.resource}:${binding.name}'.`);
-      }
-
-      return this;
-    }
-
-    name ??= this.name;
-    resource ??= cache.resource;
-
-    const { identifier, methods, properties, statics } = RemoteClassConsumer.#callRemote<SerializedRef>(
-      resource,
-      name,
-      'refs',
-    );
-
-    for (const member of [...methods, ...properties]) {
-      if (member in this.prototype) throw new Error(`${this.name} already defines '${member}'.`);
-    }
-
-    for (const member of [...statics.methods, ...statics.properties]) {
-      if (member in this) throw new Error(`${this.name} already defines static member '${member}'.`);
-    }
-
-    if (identifier !== null) {
-      for (const method of methods) {
-        Object.defineProperty(this.prototype, method, {
-          configurable: true,
-          writable: true,
-          value(this: RemoteClassConsumer, ...args: unknown[]) {
-            const id = normalizeId(Reflect.get(this, identifier));
-            return RemoteClassConsumer.#callRemote(resource, name, 'invoke', id, method, ...args);
-          },
-        });
-      }
-    }
-
-    for (const method of statics.methods) {
-      Object.defineProperty(this, method, {
-        configurable: true,
-        writable: true,
-        value: (...args: unknown[]) =>
-          RemoteClassConsumer.#callRemote(resource, name, 'invoke_static', method, ...args),
-      });
-    }
-
-    for (const property of statics.properties) {
-      Object.defineProperty(this, property, {
-        configurable: true,
-        enumerable: true,
-        get: () => RemoteClassConsumer.#callRemote(resource, name, 'read_static', property),
-      });
-    }
-
-    RemoteClassConsumer.#bindings.set(this.prototype, { name, resource, identifier, properties, instances: new Map() });
-    return this;
-  }
-
-  /** Reuses an existing proxy or creates one with properties from the provider. */
-  protected static proxy<T extends RemoteClassConsumer>(
-    this: { name: string; prototype: T },
-    id: RemoteIdentifier,
-    create: () => T,
-    name?: string,
-    resource?: string,
-  ): T {
+  /** Returns a proxy for the remote instance with the given ID. */
+  public static fromId<C extends Function & ConsumerClass>(this: C, id: RemoteIdentifier): C['prototype'] {
     const key = normalizeId(id);
-    RemoteClassConsumer.connect.call(this, name, resource);
+    const { name, resource, identifier, properties, instances } = bindConsumer(this);
 
-    const {
-      name: className,
-      resource: providerResource,
-      identifier,
-      properties,
-      instances,
-    } = RemoteClassConsumer.#bindings.get(this.prototype)!;
-
-    if (identifier === null) throw new Error(`${className} does not expose instances.`);
+    if (!identifier) throw new Error(`${name} does not expose instances.`);
 
     return internInstance(instances, key, () => {
-      const snapshot = RemoteClassConsumer.#callRemote<Record<string, unknown>>(
-        providerResource,
-        className,
-        'read',
-        key,
-      );
+      const snapshot = callRemote<Record<string, unknown>>(resource, name, 'read', key);
 
       if (!Object.hasOwn(snapshot, identifier) || normalizeId(snapshot[identifier]) !== key) {
-        throw new Error(`${className} returned a different identifier for '${key}'.`);
+        throw new Error(`${name} returned a different identifier for '${key}'.`);
       }
 
-      const instance = create();
+      const instance = Reflect.construct(this, []) as C['prototype'];
 
       for (const property of properties) {
         Object.defineProperty(instance, property, {
@@ -365,12 +279,78 @@ export abstract class RemoteClassConsumer {
     });
   }
 
-  static #callRemote<T = unknown>(resource: string, name: string, ...request: RemoteRequest): T {
-    const resourceExports = globalThis.exports[resource];
-    const callback = resourceExports?.[remoteExport];
-
-    if (typeof callback !== 'function') throw new Error(`Remote export '${resource}:${remoteExport}' is unavailable.`);
-
-    return Reflect.apply(callback, resourceExports, [name, ...request]);
+  /** Binds a consumer class to its configured provider. */
+  public static connect<T extends ConsumerClass>(this: T): T {
+    bindConsumer(this);
+    return this;
   }
+}
+
+function bindConsumer(consumer: ConsumerClass): ConsumerBinding {
+  const { name, prototype } = consumer;
+  const resource = consumer.resource?.trim();
+
+  if (!resource) throw new TypeError(`${name} requires a non-empty static resource.`);
+
+  const existing = consumerBindings.get(prototype);
+
+  if (existing) {
+    if (name !== existing.name || resource !== existing.resource) {
+      throw new Error(`${name} is already bound to '${existing.resource}:${existing.name}'.`);
+    }
+
+    return existing;
+  }
+
+  const { identifier, methods, properties, statics } = callRemote<SerializedRef>(resource, name, 'refs');
+
+  for (const member of [...methods, ...properties]) {
+    if (member in prototype) throw new Error(`${name} already defines '${member}'.`);
+  }
+
+  for (const member of [...statics.methods, ...statics.properties]) {
+    if (member in consumer) throw new Error(`${name} already defines static member '${member}'.`);
+  }
+
+  if (identifier !== null) {
+    for (const method of methods) {
+      Object.defineProperty(prototype, method, {
+        configurable: true,
+        writable: true,
+        value(this: RemoteClassConsumer, ...args: unknown[]) {
+          const id = normalizeId(Reflect.get(this, identifier));
+          return callRemote(resource, name, 'invoke', id, method, ...args);
+        },
+      });
+    }
+  }
+
+  for (const method of statics.methods) {
+    Object.defineProperty(consumer, method, {
+      configurable: true,
+      writable: true,
+      value: (...args: unknown[]) => callRemote(resource, name, 'invoke_static', method, ...args),
+    });
+  }
+
+  for (const property of statics.properties) {
+    Object.defineProperty(consumer, property, {
+      configurable: true,
+      enumerable: true,
+      get: () => callRemote(resource, name, 'read_static', property),
+    });
+  }
+
+  const binding: ConsumerBinding = { name, resource, identifier, properties, instances: new Map() };
+  consumerBindings.set(prototype, binding);
+  return binding;
+}
+
+function callRemote<T = unknown>(resource: string, name: string, ...request: RemoteRequest): T {
+  const resourceExports = globalThis.exports[resource];
+  const callback = resourceExports?.[remoteExport];
+
+  if (typeof callback !== 'function') throw new Error(`Remote export '${resource}:${remoteExport}' is unavailable.`);
+
+  return Reflect.apply(callback, resourceExports, [name, ...request]);
 }
