@@ -1,4 +1,4 @@
-import { Remote, RemoteClassProvider } from "@overextended/ox_lib/server";
+import { Remote, RemoteClassProvider } from "@overextended/ox_lib/index";
 import { KvpStore } from "../../database/server/kvp";
 
 /**

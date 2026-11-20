@@ -1,12 +1,11 @@
-import { uuid as UUID } from "@overextended/ox_lib/common/uuid";
+import { uuid as UUID } from "@overextended/ox_lib/uuid";
 import { Character } from "../character/server";
 import { KvpStore } from "../../database/server/kvp";
 import { db, type UserRow, type CharacterRow } from "../../database/server/sqlite";
 import { SELECT_UUID, UPDATE_UUID } from "framework";
 import { oxmysql } from "@overextended/oxmysql";
 import { framework } from "framework/common";
-import { cfxExport } from "@overextended/ox_lib/common/exports";
-import { Player, Remote, RemoteClassProvider } from "@overextended/ox_lib/common";
+import { Player, Remote, RemoteClassProvider } from "@overextended/ox_lib/index";
 
 const SV_LAN = GetConvarBool("SV_LAN", false);
 
@@ -231,6 +230,3 @@ export class User extends RemoteClassProvider {
 }
 
 User.register();
-
-cfxExport("getUserFromLicense", (license: string) => User.fromLicense(license));
-cfxExport("getUserfromPlayerId", (playerId: number) => User.fromPlayerId(+playerId));

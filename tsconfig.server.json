@@ -6,7 +6,7 @@
       "*/common": ["./src/*/common/", "./src/*/common.ts"],
       "common/*": ["./src/common/*"],
       "*": ["./src/*/server/", "./src/*/server.ts"],
-      "@overextended/ox_lib/*": ["./package/*"]
+      "@overextended/ox_lib/*": ["./package/server/*", "./package/common/*"]
     }
   },
   "include": [

@@ -1,4 +1,4 @@
-import { cache } from "@overextended/ox_lib/common";
+import { cache } from "@overextended/ox_lib/cache";
 import semver from "semver";
 
 function normalizeRange(version = "") {

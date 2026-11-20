@@ -1,8 +1,8 @@
-import { cache } from "@overextended/ox_lib/server";
+import { cache } from "@overextended/ox_lib/cache";
 import type { SQLInputValue, SQLOutputValue, StatementSync } from "node:sqlite";
 import { createLRU } from "lru.min";
 import { DatabaseSync } from "node:sqlite";
-import { cfxExport } from "@overextended/ox_lib/common/exports";
+import { cfxExport } from "@overextended/ox_lib/exports";
 
 export interface Row {
   [key: string]: SQLOutputValue;

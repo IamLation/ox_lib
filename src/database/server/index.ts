@@ -1,4 +1,4 @@
-import { sleep, waitFor } from "@overextended/ox_lib/common";
+import { sleep, waitFor } from "@overextended/ox_lib/utils";
 import "./sqlite";
 import { User } from "../../classes/user/server";
 import "framework";
