@@ -15,6 +15,14 @@ const stateChangeHandlers = new Map<
   }
 >();
 
+let User: typeof import('../../../server/remote-class').User;
+
+if (isServer) {
+  (async () => {
+    User = await import('../../../server/remote-class').then((m) => m.User);
+  })();
+}
+
 /** Dispatches player state changes with the new value and the previous bag value. */
 function triggerStateChangeHandlers(bag: string, key: string, value: unknown) {
   if (!bag.startsWith('player:')) return;
@@ -108,6 +116,16 @@ export class Player extends Ped {
   /** The player ped's script handle. */
   public get handle() {
     return isServer ? super.handle : GetPlayerPed(this.playerId);
+  }
+
+  /** Returns a remote class proxy for the player's user. */
+  public getUser() {
+    return User?.fromId(this.get('userId')!);
+  }
+
+  /** Returns a remote class proxy for the player's current character. */
+  public getCharacter() {
+    return User?.fromId(this.get('charId')!);
   }
 
   /** Changes the player's ped model. */

@@ -11,8 +11,6 @@ export class User extends RemoteClassConsumer {
   declare readonly license: string;
   declare set: KvpSet;
   declare get: KvpGet;
-
-  declare static getUserId: (playerId: number) => number;
 }
 
 export class Character extends RemoteClassConsumer {
@@ -21,6 +19,4 @@ export class Character extends RemoteClassConsumer {
   declare readonly id: number;
   declare set: KvpSet;
   declare get: KvpGet;
-
-  declare static getCharacterId: (playerId: number) => number;
 }

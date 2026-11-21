@@ -3,6 +3,7 @@ import "database";
 import "anticheese";
 import "version";
 import { User } from "@overextended/ox_lib/remote-class";
+import { Player } from "@overextended/ox_lib/game/Player";
 
 $DEBUG: {
   on("userSessionStart", (playerId: number, userId: number) => {
@@ -16,7 +17,8 @@ $DEBUG: {
   on("characterLoaded", (playerId: number, userId: number, charId: number) => {
     console.debug(`User<${userId}> has loaded Character<${charId}>.`);
 
-    const user = User.fromId(userId);
+    const player = Player.fromId(playerId);
+    const user = player.getUser();
 
     console.debug(user);
   });
