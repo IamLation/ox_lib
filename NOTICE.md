@@ -1,4 +1,4 @@
-Copyright © 2021-2026 [Linden](https://github.com/thelindat), [Luke](https://github.com/LukeWasTakenn), and contributors  
+Copyright © 2021-2026 [Linden](https://github.com/thelindat), [Luke](https://github.com/LukeWasTakenn), and contributors
 
 The original source code is available at: [https://github.com/overextended/ox_lib](https://github.com/overextended/ox_lib)
 
@@ -21,10 +21,13 @@ If this project has been useful to you, please [consider sponsoring its continue
 ## Frequently asked questions
 
 ### Can I redistribute modified versions of this project?
+
 You may fork, modify, and redistribute this project, provided you comply with the license and preserve the same rights and freedoms for downstream recipients.
 
 ### Am I allowed to encrypt this project?
+
 Recipients of this project must receive the complete corresponding source code and be able to install, motifiy, build, and run it. Distributing the project in a form — including through encryption, obfuscation, or other technical measures — that prevents recipients from exercising the rights granted by the license is not permitted.
 
 ### Can I sell a modified version of this project?
+
 Commercial distribution is permitted, provided you comply with the terms of the license. However, recipients retain the same rights and freedoms under the license and may freely redistribute modified versions.

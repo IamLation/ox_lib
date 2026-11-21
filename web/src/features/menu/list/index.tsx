@@ -1,12 +1,12 @@
-import { Box, createStyles, Stack, Tooltip } from '@mantine/core';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNuiEvent } from '../../../hooks/useNuiEvent';
-import ListItem from './ListItem';
-import Header from './Header';
-import FocusTrap from 'focus-trap-react';
-import { fetchNui } from '../../../utils/fetchNui';
-import type { MenuPosition, MenuSettings } from '../../../typings';
-import LibIcon from '../../../components/LibIcon';
+import { Box, createStyles, Stack, Tooltip } from "@mantine/core";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useNuiEvent } from "../../../hooks/useNuiEvent";
+import ListItem from "./ListItem";
+import Header from "./Header";
+import FocusTrap from "focus-trap-react";
+import { fetchNui } from "../../../utils/fetchNui";
+import type { MenuPosition, MenuSettings } from "../../../typings";
+import LibIcon from "../../../components/LibIcon";
 
 const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCount: number; selected: number }) => ({
   tooltip: {
@@ -14,25 +14,25 @@ const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCo
     color: theme.colors.dark[2],
     borderRadius: theme.radius.sm,
     maxWidth: 350,
-    whiteSpace: 'normal',
+    whiteSpace: "normal",
   },
   container: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    marginTop: params.position === 'top-left' || params.position === 'top-right' ? 5 : 0,
-    marginLeft: params.position === 'top-left' || params.position === 'bottom-left' ? 5 : 0,
-    marginRight: params.position === 'top-right' || params.position === 'bottom-right' ? 5 : 0,
-    marginBottom: params.position === 'bottom-left' || params.position === 'bottom-right' ? 5 : 0,
-    right: params.position === 'top-right' || params.position === 'bottom-right' ? 1 : undefined,
-    left: params.position === 'bottom-left' ? 1 : undefined,
-    bottom: params.position === 'bottom-left' || params.position === 'bottom-right' ? 1 : undefined,
-    fontFamily: 'Roboto',
+    position: "absolute",
+    pointerEvents: "none",
+    marginTop: params.position === "top-left" || params.position === "top-right" ? 5 : 0,
+    marginLeft: params.position === "top-left" || params.position === "bottom-left" ? 5 : 0,
+    marginRight: params.position === "top-right" || params.position === "bottom-right" ? 5 : 0,
+    marginBottom: params.position === "bottom-left" || params.position === "bottom-right" ? 5 : 0,
+    right: params.position === "top-right" || params.position === "bottom-right" ? 1 : undefined,
+    left: params.position === "bottom-left" ? 1 : undefined,
+    bottom: params.position === "bottom-left" || params.position === "bottom-right" ? 1 : undefined,
+    fontFamily: "Roboto",
     width: 384,
   },
   buttonsWrapper: {
-    height: 'fit-content',
+    height: "fit-content",
     maxHeight: 415,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: params.itemCount <= 6 || params.selected === params.itemCount - 1 ? theme.radius.md : undefined,
     backgroundColor: theme.colors.dark[8],
     borderTopLeftRadius: 0,
@@ -40,7 +40,7 @@ const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCo
   },
   scrollArrow: {
     backgroundColor: theme.colors.dark[8],
-    textAlign: 'center',
+    textAlign: "center",
     borderBottomLeftRadius: theme.radius.md,
     borderBottomRightRadius: theme.radius.md,
     height: 25,
@@ -53,8 +53,8 @@ const useStyles = createStyles((theme, params: { position?: MenuPosition; itemCo
 
 const ListMenu: React.FC = () => {
   const [menu, setMenu] = useState<MenuSettings>({
-    position: 'top-left',
-    title: '',
+    position: "top-left",
+    title: "",
     items: [],
   });
   const [selected, setSelected] = useState(0);
@@ -68,25 +68,25 @@ const ListMenu: React.FC = () => {
   const closeMenu = (ignoreFetch?: boolean, keyPressed?: string, forceClose?: boolean) => {
     if (menu.canClose === false && !forceClose) return;
     setVisible(false);
-    if (!ignoreFetch) fetchNui('closeMenu', keyPressed);
+    if (!ignoreFetch) fetchNui("closeMenu", keyPressed);
   };
 
   const moveMenu = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (firstRenderRef.current) firstRenderRef.current = false;
     switch (e.code) {
-      case 'ArrowDown':
+      case "ArrowDown":
         setSelected((selected) => {
           if (selected >= menu.items.length - 1) return (selected = 0);
           return selected + 1;
         });
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         setSelected((selected) => {
           if (selected <= 0) return (selected = menu.items.length - 1);
           return selected - 1;
         });
         break;
-      case 'ArrowRight':
+      case "ArrowRight":
         if (Array.isArray(menu.items[selected].values))
           setIndexStates({
             ...indexStates,
@@ -94,7 +94,7 @@ const ListMenu: React.FC = () => {
               indexStates[selected] + 1 <= menu.items[selected].values?.length! - 1 ? indexStates[selected] + 1 : 0,
           });
         break;
-      case 'ArrowLeft':
+      case "ArrowLeft":
         if (Array.isArray(menu.items[selected].values))
           setIndexStates({
             ...indexStates,
@@ -103,7 +103,7 @@ const ListMenu: React.FC = () => {
           });
 
         break;
-      case 'Enter':
+      case "Enter":
         if (!menu.items[selected]) return;
         if (menu.items[selected].checked !== undefined && !menu.items[selected].values) {
           return setCheckedStates({
@@ -111,7 +111,7 @@ const ListMenu: React.FC = () => {
             [selected]: !checkedStates[selected],
           });
         }
-        fetchNui('confirmSelected', [selected, indexStates[selected]]).catch();
+        fetchNui("confirmSelected", [selected, indexStates[selected]]).catch();
         if (menu.items[selected].close === undefined || menu.items[selected].close) setVisible(false);
         break;
     }
@@ -120,7 +120,7 @@ const ListMenu: React.FC = () => {
   useEffect(() => {
     if (menu.items[selected]?.checked === undefined || firstRenderRef.current) return;
     const timer = setTimeout(() => {
-      fetchNui('changeChecked', [selected, checkedStates[selected]]).catch();
+      fetchNui("changeChecked", [selected, checkedStates[selected]]).catch();
     }, 100);
     return () => clearTimeout(timer);
   }, [checkedStates]);
@@ -128,7 +128,7 @@ const ListMenu: React.FC = () => {
   useEffect(() => {
     if (!menu.items[selected]?.values || firstRenderRef.current) return;
     const timer = setTimeout(() => {
-      fetchNui('changeIndex', [selected, indexStates[selected]]).catch();
+      fetchNui("changeIndex", [selected, indexStates[selected]]).catch();
     }, 100);
     return () => clearTimeout(timer);
   }, [indexStates]);
@@ -136,20 +136,20 @@ const ListMenu: React.FC = () => {
   useEffect(() => {
     if (!menu.items[selected]) return;
     listRefs.current[selected]?.scrollIntoView({
-      block: 'nearest',
-      inline: 'start',
+      block: "nearest",
+      inline: "start",
     });
     listRefs.current[selected]?.focus({ preventScroll: true });
     // debounces the callback to avoid spam
     const timer = setTimeout(() => {
-      fetchNui('changeSelected', [
+      fetchNui("changeSelected", [
         selected,
         menu.items[selected].values
           ? indexStates[selected]
           : menu.items[selected].checked
-          ? checkedStates[selected]
-          : null,
-        menu.items[selected].values ? 'isScroll' : menu.items[selected].checked ? 'isCheck' : null,
+            ? checkedStates[selected]
+            : null,
+        menu.items[selected].values ? "isScroll" : menu.items[selected].checked ? "isCheck" : null,
       ]).catch();
     }, 100);
     return () => clearTimeout(timer);
@@ -159,29 +159,29 @@ const ListMenu: React.FC = () => {
     if (!visible) return;
 
     const keyHandler = (e: KeyboardEvent) => {
-      if (['Escape', 'Backspace'].includes(e.code)) closeMenu(false, e.code);
+      if (["Escape", "Backspace"].includes(e.code)) closeMenu(false, e.code);
     };
 
-    window.addEventListener('keydown', keyHandler);
+    window.addEventListener("keydown", keyHandler);
 
-    return () => window.removeEventListener('keydown', keyHandler);
+    return () => window.removeEventListener("keydown", keyHandler);
   }, [visible]);
 
   const isValuesObject = useCallback(
     (values?: Array<string | { label: string; description: string }>) => {
-      return Array.isArray(values) && typeof values[indexStates[selected]] === 'object';
+      return Array.isArray(values) && typeof values[indexStates[selected]] === "object";
     },
-    [indexStates, selected]
+    [indexStates, selected],
   );
 
-  useNuiEvent('closeMenu', () => closeMenu(true, undefined, true));
+  useNuiEvent("closeMenu", () => closeMenu(true, undefined, true));
 
-  useNuiEvent('setMenu', (data: MenuSettings) => {
+  useNuiEvent("setMenu", (data: MenuSettings) => {
     firstRenderRef.current = true;
     if (!data.startItemIndex || data.startItemIndex < 0) data.startItemIndex = 0;
     else if (data.startItemIndex >= data.items.length) data.startItemIndex = data.items.length - 1;
     setSelected(data.startItemIndex);
-    if (!data.position) data.position = 'top-left';
+    if (!data.position) data.position = "top-left";
     listRefs.current = [];
     setMenu(data);
     setVisible(true);
@@ -219,7 +219,7 @@ const ListMenu: React.FC = () => {
             <Header title={menu.title} />
             <Box className={classes.buttonsWrapper} onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => moveMenu(e)}>
               <FocusTrap active={visible}>
-                <Stack spacing={8} p={8} sx={{ overflowY: 'scroll' }}>
+                <Stack spacing={8} p={8} sx={{ overflowY: "scroll" }}>
                   {menu.items.map((item, index) => (
                     <React.Fragment key={`menu-item-${index}`}>
                       {item.label && (
