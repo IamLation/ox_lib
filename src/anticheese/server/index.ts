@@ -3,4 +3,5 @@
  */
 
 import "./advisories";
+import "./game-events";
 import "./states";
