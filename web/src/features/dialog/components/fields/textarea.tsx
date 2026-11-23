@@ -1,8 +1,8 @@
-import { Textarea } from '@mantine/core';
-import { UseFormRegisterReturn } from 'react-hook-form';
-import { ITextarea } from '../../../../typings/dialog';
-import React from 'react';
-import LibIcon from '../../../../components/LibIcon';
+import { Textarea } from "@mantine/core";
+import { UseFormRegisterReturn } from "react-hook-form";
+import { ITextarea } from "../../../../typings/dialog";
+import React from "react";
+import LibIcon from "../../../../components/LibIcon";
 
 interface Props {
   register: UseFormRegisterReturn;

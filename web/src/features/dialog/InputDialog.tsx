@@ -1,21 +1,21 @@
-import { Button, Group, Modal, Stack } from '@mantine/core';
-import React from 'react';
-import { useNuiEvent } from '../../hooks/useNuiEvent';
-import { useLocales } from '../../providers/LocaleProvider';
-import { fetchNui } from '../../utils/fetchNui';
-import type { InputProps } from '../../typings';
-import { OptionValue } from '../../typings';
-import InputField from './components/fields/input';
-import CheckboxField from './components/fields/checkbox';
-import SelectField from './components/fields/select';
-import NumberField from './components/fields/number';
-import SliderField from './components/fields/slider';
-import { useFieldArray, useForm } from 'react-hook-form';
-import ColorField from './components/fields/color';
-import DateField from './components/fields/date';
-import TextareaField from './components/fields/textarea';
-import TimeField from './components/fields/time';
-import dayjs from 'dayjs';
+import { Button, Group, Modal, Stack } from "@mantine/core";
+import React from "react";
+import { useNuiEvent } from "../../hooks/useNuiEvent";
+import { useLocales } from "../../providers/LocaleProvider";
+import { fetchNui } from "../../utils/fetchNui";
+import type { InputProps } from "../../typings";
+import { OptionValue } from "../../typings";
+import InputField from "./components/fields/input";
+import CheckboxField from "./components/fields/checkbox";
+import SelectField from "./components/fields/select";
+import NumberField from "./components/fields/number";
+import SliderField from "./components/fields/slider";
+import { useFieldArray, useForm } from "react-hook-form";
+import ColorField from "./components/fields/color";
+import DateField from "./components/fields/date";
+import TextareaField from "./components/fields/textarea";
+import TimeField from "./components/fields/time";
+import dayjs from "dayjs";
 
 export type FormValues = {
   test: {
@@ -25,8 +25,8 @@ export type FormValues = {
 
 const InputDialog: React.FC = () => {
   const [fields, setFields] = React.useState<InputProps>({
-    heading: '',
-    rows: [{ type: 'input', label: '' }],
+    heading: "",
+    rows: [{ type: "input", label: "" }],
   });
   const [visible, setVisible] = React.useState(false);
   const { locale } = useLocales();
@@ -35,10 +35,10 @@ const InputDialog: React.FC = () => {
   const form = useForm<{ test: { value: any }[] }>({});
   const fieldForm = useFieldArray({
     control: form.control,
-    name: 'test',
+    name: "test",
   });
 
-  useNuiEvent<InputProps>('openDialog', (data) => {
+  useNuiEvent<InputProps>("openDialog", (data) => {
     if (closeTimeout.current) {
       clearTimeout(closeTimeout.current);
       closeTimeout.current = null;
@@ -53,28 +53,28 @@ const InputDialog: React.FC = () => {
         index,
         {
           value:
-            row.type !== 'checkbox'
-              ? row.type === 'date' || row.type === 'date-range' || row.type === 'time'
+            row.type !== "checkbox"
+              ? row.type === "date" || row.type === "date-range" || row.type === "time"
                 ? // Set date to current one if default is set to true
                   row.default === true
                   ? new Date().getTime()
                   : Array.isArray(row.default)
-                  ? row.default.map((date) => new Date(date).getTime())
-                  : row.default && new Date(row.default).getTime()
+                    ? row.default.map((date) => new Date(date).getTime())
+                    : row.default && new Date(row.default).getTime()
                 : row.default
               : row.checked,
-        } || { value: null }
+        } || { value: null },
       );
       // Backwards compat with new Select data type
-      if (row.type === 'select' || row.type === 'multi-select') {
+      if (row.type === "select" || row.type === "multi-select") {
         row.options = row.options.map((option) =>
-          !option.label ? { ...option, label: option.value } : option
+          !option.label ? { ...option, label: option.value } : option,
         ) as Array<OptionValue>;
       }
     });
   });
 
-  useNuiEvent('closeInputDialog', () => handleClose(true));
+  useNuiEvent("closeInputDialog", () => handleClose(true));
 
   const handleClose = (dontPost?: boolean) => {
     setVisible(false);
@@ -86,7 +86,7 @@ const InputDialog: React.FC = () => {
       fieldForm.remove();
       closeTimeout.current = null;
       if (!dontPost) {
-        fetchNui('inputData');
+        fetchNui("inputData");
       }
     }, 200);
   };
@@ -97,9 +97,9 @@ const InputDialog: React.FC = () => {
     for (let i = 0; i < fields.rows.length; i++) {
       const row = fields.rows[i];
 
-      if ((row.type === 'date' || row.type === 'date-range') && row.returnString) {
+      if ((row.type === "date" || row.type === "date-range") && row.returnString) {
         if (!data.test[i]) continue;
-        const format = row.format || 'DD/MM/YYYY';
+        const format = row.format || "DD/MM/YYYY";
         const toString = (date: number | null) => (date ? dayjs(date).format(format) : null);
         const value = data.test[i].value;
         data.test[i].value = Array.isArray(value) ? value.map(toString) : toString(value);
@@ -113,7 +113,7 @@ const InputDialog: React.FC = () => {
       form.reset();
       fieldForm.remove();
       closeTimeout.current = null;
-      fetchNui('inputData', values);
+      fetchNui("inputData", values);
     }, 200);
   });
 
@@ -125,8 +125,8 @@ const InputDialog: React.FC = () => {
         centered
         closeOnEscape={fields.options?.allowCancel !== false}
         closeOnClickOutside={false}
-        size={fields.options?.size || 'xs'}
-        styles={{ title: { textAlign: 'center', width: '100%', fontSize: 18 } }}
+        size={fields.options?.size || "xs"}
+        styles={{ title: { textAlign: "center", width: "100%", fontSize: 18 } }}
         title={fields.heading}
         withCloseButton={false}
         overlayOpacity={0.5}
@@ -139,31 +139,31 @@ const InputDialog: React.FC = () => {
               const row = fields.rows[index];
               return (
                 <React.Fragment key={item.id}>
-                  {row.type === 'input' && (
+                  {row.type === "input" && (
                     <InputField
                       register={form.register(`test.${index}.value`, { required: row.required })}
                       row={row}
                       index={index}
                     />
                   )}
-                  {row.type === 'checkbox' && (
+                  {row.type === "checkbox" && (
                     <CheckboxField
                       register={form.register(`test.${index}.value`, { required: row.required })}
                       row={row}
                       index={index}
                     />
                   )}
-                  {(row.type === 'select' || row.type === 'multi-select') && (
+                  {(row.type === "select" || row.type === "multi-select") && (
                     <SelectField row={row} index={index} control={form.control} />
                   )}
-                  {row.type === 'number' && <NumberField control={form.control} row={row} index={index} />}
-                  {row.type === 'slider' && <SliderField control={form.control} row={row} index={index} />}
-                  {row.type === 'color' && <ColorField control={form.control} row={row} index={index} />}
-                  {row.type === 'time' && <TimeField control={form.control} row={row} index={index} />}
-                  {row.type === 'date' || row.type === 'date-range' ? (
+                  {row.type === "number" && <NumberField control={form.control} row={row} index={index} />}
+                  {row.type === "slider" && <SliderField control={form.control} row={row} index={index} />}
+                  {row.type === "color" && <ColorField control={form.control} row={row} index={index} />}
+                  {row.type === "time" && <TimeField control={form.control} row={row} index={index} />}
+                  {row.type === "date" || row.type === "date-range" ? (
                     <DateField control={form.control} row={row} index={index} />
                   ) : null}
-                  {row.type === 'textarea' && (
+                  {row.type === "textarea" && (
                     <TextareaField
                       register={form.register(`test.${index}.value`, { required: row.required })}
                       row={row}

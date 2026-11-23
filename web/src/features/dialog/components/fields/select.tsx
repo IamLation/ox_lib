@@ -1,8 +1,8 @@
-import { MultiSelect, Select } from '@mantine/core';
-import { ISelect } from '../../../../typings';
-import { Control, useController } from 'react-hook-form';
-import { FormValues } from '../../InputDialog';
-import LibIcon from '../../../../components/LibIcon';
+import { MultiSelect, Select } from "@mantine/core";
+import { ISelect } from "../../../../typings";
+import { Control, useController } from "react-hook-form";
+import { FormValues } from "../../InputDialog";
+import LibIcon from "../../../../components/LibIcon";
 
 interface Props {
   row: ISelect;
@@ -19,7 +19,7 @@ const SelectField: React.FC<Props> = (props) => {
 
   return (
     <>
-      {props.row.type === 'select' ? (
+      {props.row.type === "select" ? (
         <Select
           data={props.row.options}
           value={controller.field.value}
@@ -37,7 +37,7 @@ const SelectField: React.FC<Props> = (props) => {
         />
       ) : (
         <>
-          {props.row.type === 'multi-select' && (
+          {props.row.type === "multi-select" && (
             <MultiSelect
               data={props.row.options}
               value={controller.field.value}

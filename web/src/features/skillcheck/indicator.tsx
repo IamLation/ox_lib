@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { SkillCheckProps } from '../../typings';
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { SkillCheckProps } from "../../typings";
 
 interface Props {
   angle: number;
@@ -12,14 +12,7 @@ interface Props {
 
 const BASE_DURATION_MS = 2000;
 
-const Indicator: React.FC<Props> = ({
-  angle,
-  offset,
-  multiplier,
-  handleComplete,
-  skillCheck,
-  className,
-}) => {
+const Indicator: React.FC<Props> = ({ angle, offset, multiplier, handleComplete, skillCheck, className }) => {
   const [indicatorAngle, setIndicatorAngle] = useState(-90);
   const [keyPressed, setKeyPressed] = useState<false | string>(false);
 
@@ -61,25 +54,27 @@ const Indicator: React.FC<Props> = ({
 
       rafIdRef.current = requestAnimationFrame(animate);
     },
-    [multiplier, handleComplete]
+    [multiplier, handleComplete],
   );
   const keyHandler = useCallback(
     (e: KeyboardEvent) => {
       const capitalHetaCode = 880;
       const isNonLatin = e.key.charCodeAt(0) >= capitalHetaCode;
-      var convKey = e.key.toLowerCase()
+      var convKey = e.key.toLowerCase();
       if (isNonLatin) {
-        if (e.code.indexOf('Key') === 0 && e.code.length === 4) { // i.e. 'KeyW'
+        if (e.code.indexOf("Key") === 0 && e.code.length === 4) {
+          // i.e. 'KeyW'
           convKey = e.code.charAt(3);
         }
 
-        if (e.code.indexOf('Digit') === 0 && e.code.length === 6) { // i.e. 'Digit7'
+        if (e.code.indexOf("Digit") === 0 && e.code.length === 6) {
+          // i.e. 'Digit7'
           convKey = e.code.charAt(5);
         }
       }
       setKeyPressed(convKey.toLowerCase());
     },
-    [skillCheck]
+    [skillCheck],
   );
 
   useEffect(() => {
@@ -87,12 +82,12 @@ const Indicator: React.FC<Props> = ({
     startTimeRef.current = null;
     completedRef.current = false;
 
-    window.addEventListener('keydown', keyHandler);
+    window.addEventListener("keydown", keyHandler);
     rafIdRef.current = requestAnimationFrame(animate);
 
     return () => {
       stopAnimation();
-      window.removeEventListener('keydown', keyHandler);
+      window.removeEventListener("keydown", keyHandler);
       startTimeRef.current = null;
       completedRef.current = true;
     };
@@ -104,7 +99,7 @@ const Indicator: React.FC<Props> = ({
     if (skillCheck.keys && !skillCheck.keys?.includes(keyPressed)) return;
 
     stopAnimation();
-    window.removeEventListener('keydown', keyHandler);
+    window.removeEventListener("keydown", keyHandler);
     completedRef.current = true;
 
     if (keyPressed !== skillCheck.key || indicatorAngle < angle || indicatorAngle > angle + offset)
@@ -112,15 +107,7 @@ const Indicator: React.FC<Props> = ({
     else handleComplete(true);
 
     setKeyPressed(false);
-  }, [
-    keyPressed,
-    angle,
-    offset,
-    indicatorAngle,
-    skillCheck,
-    keyHandler,
-    handleComplete,
-  ]);
+  }, [keyPressed, angle, offset, indicatorAngle, skillCheck, keyHandler, handleComplete]);
 
   return <circle transform={`rotate(${indicatorAngle}, 250, 250)`} className={className} />;
 };

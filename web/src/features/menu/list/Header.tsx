@@ -1,21 +1,21 @@
-import { Box, createStyles, Text } from '@mantine/core';
-import React from 'react';
+import { Box, createStyles, Text } from "@mantine/core";
+import React from "react";
 
 const useStyles = createStyles((theme) => ({
   container: {
-    textAlign: 'center',
+    textAlign: "center",
     borderTopLeftRadius: theme.radius.md,
     borderTopRightRadius: theme.radius.md,
     backgroundColor: theme.colors.dark[6],
     height: 60,
     width: 384,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
   heading: {
     fontSize: 24,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     fontWeight: 500,
   },
 }));
