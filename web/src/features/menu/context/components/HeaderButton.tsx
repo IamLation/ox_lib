@@ -1,6 +1,6 @@
-import { Button, createStyles } from '@mantine/core';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import LibIcon from '../../../../components/LibIcon';
+import { Button, createStyles } from "@mantine/core";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import LibIcon from "../../../../components/LibIcon";
 
 interface Props {
   icon: IconProp;
@@ -12,15 +12,15 @@ interface Props {
 const useStyles = createStyles((theme, params: { canClose?: boolean }) => ({
   button: {
     borderRadius: 4,
-    flex: '1 15%',
-    alignSelf: 'stretch',
-    height: 'auto',
-    textAlign: 'center',
-    justifyContent: 'center',
+    flex: "1 15%",
+    alignSelf: "stretch",
+    height: "auto",
+    textAlign: "center",
+    justifyContent: "center",
     padding: 2,
   },
   root: {
-    border: 'none',
+    border: "none",
   },
   label: {
     color: params.canClose === false ? theme.colors.dark[2] : theme.colors.dark[0],
