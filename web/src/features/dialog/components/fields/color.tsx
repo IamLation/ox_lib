@@ -1,8 +1,8 @@
-import { IColorInput } from '../../../../typings/dialog';
-import { Control, useController } from 'react-hook-form';
-import { FormValues } from '../../InputDialog';
-import { ColorInput } from '@mantine/core';
-import LibIcon from '../../../../components/LibIcon';
+import { IColorInput } from "../../../../typings/dialog";
+import { Control, useController } from "react-hook-form";
+import { FormValues } from "../../InputDialog";
+import { ColorInput } from "@mantine/core";
+import LibIcon from "../../../../components/LibIcon";
 
 interface Props {
   row: IColorInput;

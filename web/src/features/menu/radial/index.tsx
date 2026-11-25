@@ -1,33 +1,33 @@
-import { Box, createStyles } from '@mantine/core';
-import { useEffect, useState } from 'react';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { useNuiEvent } from '../../../hooks/useNuiEvent';
-import { fetchNui } from '../../../utils/fetchNui';
-import { isIconUrl } from '../../../utils/isIconUrl';
-import ScaleFade from '../../../transitions/ScaleFade';
-import type { RadialMenuItem } from '../../../typings';
-import { useLocales } from '../../../providers/LocaleProvider';
-import LibIcon from '../../../components/LibIcon';
+import { Box, createStyles } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { useNuiEvent } from "../../../hooks/useNuiEvent";
+import { fetchNui } from "../../../utils/fetchNui";
+import { isIconUrl } from "../../../utils/isIconUrl";
+import ScaleFade from "../../../transitions/ScaleFade";
+import type { RadialMenuItem } from "../../../typings";
+import { useLocales } from "../../../providers/LocaleProvider";
+import LibIcon from "../../../components/LibIcon";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
   },
   sector: {
     fill: theme.colors.dark[6],
     color: theme.colors.dark[0],
 
-    '&:hover': {
+    "&:hover": {
       fill: theme.fn.primaryColor(),
-      cursor: 'pointer',
-      '> g > text, > g > svg > path': {
-        fill: '#fff',
+      cursor: "pointer",
+      "> g > text, > g > svg > path": {
+        fill: "#fff",
       },
     },
-    '> g > text': {
+    "> g > text": {
       fill: theme.colors.dark[0],
       strokeWidth: 0,
     },
@@ -37,23 +37,23 @@ const useStyles = createStyles((theme) => ({
   },
   centerCircle: {
     fill: theme.fn.primaryColor(),
-    color: '#fff',
+    color: "#fff",
     stroke: theme.colors.dark[6],
     strokeWidth: 4,
-    '&:hover': {
-      cursor: 'pointer',
+    "&:hover": {
+      cursor: "pointer",
       fill: theme.colors[theme.primaryColor][theme.fn.primaryShade() - 1],
     },
   },
   centerIconContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    pointerEvents: 'none',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    pointerEvents: "none",
   },
   centerIcon: {
-    color: '#fff',
+    color: "#fff",
   },
 }));
 
@@ -64,13 +64,13 @@ const calculateFontSize = (text: string): number => {
 };
 
 const splitTextIntoLines = (text: string, maxCharPerLine: number = 15): string[] => {
-  const words = text.split(' ');
+  const words = text.split(" ");
   const lines: string[] = [];
   let currentLine = words[0];
 
   for (let i = 1; i < words.length; i++) {
     if (currentLine.length + words[i].length + 1 <= maxCharPerLine) {
-      currentLine += ' ' + words[i];
+      currentLine += " " + words[i];
     } else {
       lines.push(currentLine);
       currentLine = words[i];
@@ -99,7 +99,7 @@ const RadialMenu: React.FC = () => {
   const changePage = async (increment?: boolean) => {
     setVisible(false);
 
-    const didTransition: boolean = await fetchNui('radialTransition');
+    const didTransition: boolean = await fetchNui("radialTransition");
 
     if (!didTransition) return;
 
@@ -111,27 +111,27 @@ const RadialMenu: React.FC = () => {
     if (menu.items.length <= PAGE_ITEMS) return setMenuItems(menu.items);
     const items = menu.items.slice(
       PAGE_ITEMS * (menu.page - 1) - (menu.page - 1),
-      PAGE_ITEMS * menu.page - menu.page + 1
+      PAGE_ITEMS * menu.page - menu.page + 1,
     );
     if (PAGE_ITEMS * menu.page - menu.page + 1 < menu.items.length) {
-      items[items.length - 1] = { icon: 'ellipsis-h', label: locale.ui.more, isMore: true };
+      items[items.length - 1] = { icon: "ellipsis-h", label: locale.ui.more, isMore: true };
     }
     setMenuItems(items);
   }, [menu.items, menu.page]);
 
-  useNuiEvent('openRadialMenu', async (data: { items: RadialMenuItem[]; sub?: boolean; option?: string } | false) => {
+  useNuiEvent("openRadialMenu", async (data: { items: RadialMenuItem[]; sub?: boolean; option?: string } | false) => {
     if (!data) return setVisible(false);
     let initialPage = 1;
     if (data.option) {
       data.items.findIndex(
-        (item, index) => item.menu == data.option && (initialPage = Math.floor(index / PAGE_ITEMS) + 1)
+        (item, index) => item.menu == data.option && (initialPage = Math.floor(index / PAGE_ITEMS) + 1),
       );
     }
     setMenu({ ...data, page: initialPage });
     setVisible(true);
   });
 
-  useNuiEvent('refreshItems', (data: RadialMenuItem[]) => {
+  useNuiEvent("refreshItems", (data: RadialMenuItem[]) => {
     setMenu({ ...menu, items: data });
   });
 
@@ -141,12 +141,12 @@ const RadialMenu: React.FC = () => {
         className={classes.wrapper}
         onContextMenu={async () => {
           if (menu.page > 1) await changePage();
-          else if (menu.sub) fetchNui('radialBack');
+          else if (menu.sub) fetchNui("radialBack");
         }}
       >
         <ScaleFade visible={visible}>
           <svg
-            style={{ overflow: 'visible' }}
+            style={{ overflow: "visible" }}
             width={`${newDimension}px`}
             height={`${newDimension}px`}
             viewBox="0 0 350 350"
@@ -175,7 +175,7 @@ const RadialMenu: React.FC = () => {
                   className={classes.sector}
                   onClick={async () => {
                     const clickIndex = menu.page === 1 ? index : PAGE_ITEMS * (menu.page - 1) - (menu.page - 1) + index;
-                    if (!item.isMore) fetchNui('radialClick', clickIndex);
+                    if (!item.isMore) fetchNui("radialClick", clickIndex);
                     else {
                       await changePage(true);
                     }
@@ -187,7 +187,7 @@ const RadialMenu: React.FC = () => {
                     }, ${175 + (175 - gap) * Math.sin(-degToRad(pieAngle))} z`}
                   />
                   <g transform={`rotate(${index * pieAngle - 90} ${iconX} ${iconY})`} pointerEvents="none">
-                    {typeof item.icon === 'string' && isIconUrl(item.icon) ? (
+                    {typeof item.icon === "string" && isIconUrl(item.icon) ? (
                       <image
                         href={item.icon}
                         width={iconWidth}
@@ -215,7 +215,7 @@ const RadialMenu: React.FC = () => {
                       lengthAdjust="spacingAndGlyphs"
                     >
                       {splitTextIntoLines(item.label, 15).map((line, index) => (
-                        <tspan x={iconX} dy={index === 0 ? 0 : '1.2em'} key={index}>
+                        <tspan x={iconX} dy={index === 0 ? 0 : "1.2em"} key={index}>
                           {line}
                         </tspan>
                       ))}
@@ -229,10 +229,10 @@ const RadialMenu: React.FC = () => {
               onClick={async () => {
                 if (menu.page > 1) await changePage();
                 else {
-                  if (menu.sub) fetchNui('radialBack');
+                  if (menu.sub) fetchNui("radialBack");
                   else {
                     setVisible(false);
-                    fetchNui('radialClose');
+                    fetchNui("radialClose");
                   }
                 }
               }}
@@ -242,7 +242,7 @@ const RadialMenu: React.FC = () => {
           </svg>
           <div className={classes.centerIconContainer}>
             <LibIcon
-              icon={!menu.sub && menu.page < 2 ? 'xmark' : 'arrow-rotate-left'}
+              icon={!menu.sub && menu.page < 2 ? "xmark" : "arrow-rotate-left"}
               fixedWidth
               className={classes.centerIcon}
               color="#fff"
