@@ -16,10 +16,12 @@ const stateChangeHandlers = new Map<
 >();
 
 let User: typeof import('../../../server/remote-class').User;
+let Character: typeof import('../../../server/remote-class').Character;
 
 if (isServer) {
   (async () => {
     User = await import('../../../server/remote-class').then((m) => m.User);
+    Character = await import('../../../server/remote-class').then((m) => m.Character);
   })();
 }
 
@@ -125,7 +127,7 @@ export class Player extends Ped {
 
   /** Returns a remote class proxy for the player's current character. */
   public getCharacter() {
-    return User?.fromId(this.get('charId')!);
+    return Character?.fromId(this.get('charId')!);
   }
 
   /** Changes the player's ped model. */

@@ -11,6 +11,7 @@
 local Ped = require 'Ox.Game.Ped'
 local isServer = lib.context == 'server'
 local User = isServer and require 'Ox.User' or nil
+local Character = isServer and require 'Ox.Character' or nil
 
 ---@class Player : Ped
 ---@field handle number The player ped's script handle.
@@ -135,7 +136,7 @@ end
 
 ---Returns a remote class proxy for the player's current character.
 function Player:getCharacter()
-    return User?.fromId(self:get('charId'))
+    return Character?.fromId(self:get('charId'))
 end
 
 ---@param model string | number
