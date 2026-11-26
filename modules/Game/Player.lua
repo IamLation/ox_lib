@@ -10,6 +10,7 @@
 
 local Ped = require 'Ox.Game.Ped'
 local isServer = lib.context == 'server'
+local User = isServer and require 'Ox.User' or nil
 
 ---@class Player : Ped
 ---@field handle number The player ped's script handle.
@@ -58,6 +59,8 @@ local function triggerStateChangeHandlers(bag, key, value)
 end
 
 ---Returns a cached player instance or creates a new one.
+---@param netId number
+---@return Player
 function Player.fromId(netId)
     if netId == -1 then netId = isServer and tonumber(GetPlayerFromIndex(0)) or cache.serverId end
 
@@ -123,6 +126,16 @@ function Player:__index(index)
     end
 
     return Player[index]
+end
+
+---Returns a remote class proxy for the player's user.
+function Player:getUser()
+    return User?.fromId(self:get('userId'))
+end
+
+---Returns a remote class proxy for the player's current character.
+function Player:getCharacter()
+    return User?.fromId(self:get('charId'))
 end
 
 ---@param model string | number
