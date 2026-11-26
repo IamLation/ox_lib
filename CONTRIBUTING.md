@@ -60,7 +60,7 @@ This Contributor License Agreement ("Agreement") is entered into between the con
 By submitting any code, documentation, or other materials (collectively, the "Contribution") to this project, the Contributor agrees to the following terms:
 
 1. **License Grant**  
-    Subject to the Contributor retaining all ownership rights in their Contribution, the Contributor hereby grants the Owner a perpetual, irrevocable, worldwide, non-exclusive license to:
+   Subject to the Contributor retaining all ownership rights in their Contribution, the Contributor hereby grants the Owner a perpetual, irrevocable, worldwide, non-exclusive license to:
 
    - Use, reproduce, modify, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute the Contribution,
    - Incorporate the Contribution into the Project or any derivative works thereof, **under the terms of the Project's License**.

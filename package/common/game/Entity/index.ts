@@ -1,4 +1,4 @@
-import { Vector3 } from '@overextended/core/vector';
+import { Vector3 } from '../../vector';
 import { context } from '../..';
 
 const isServer = context === 'server';
@@ -18,10 +18,10 @@ export abstract class GameEntity {
   readonly netId: number = 0;
   protected statebag: string = '';
 
-  /** Writes a value to the entity's state. Replicated values are validated by the server. */
+  /** Writes entity state, requesting server validation for synced values and strict client replication. */
   public async set(key: string, value: unknown, mode?: StateBagReplication): Promise<boolean> {
     if (mode && !this.netId) mode = undefined;
-  
+
     if ((mode === 1 && !allowStateBagReplication) || mode === 2) {
       if (mode === 2 && this.type !== 'Player') {
         throw new Error('Setting synced-states is not supported for non-player entities.');
@@ -30,7 +30,14 @@ export abstract class GameEntity {
       if (!isServer) {
         const ok = await import('../../../client/callback').then(
           (m) =>
-            m.triggerServerCallback('ox_lib:requestSetStateBag', null, this.statebag, key, value) as Promise<boolean>,
+            m.triggerServerCallback(
+              'ox_lib:requestSetStateBag',
+              null,
+              this.statebag,
+              key,
+              value,
+              mode,
+            ) as Promise<boolean>,
         );
 
         return ok ? this.set(key, value) : false;
@@ -46,7 +53,7 @@ export abstract class GameEntity {
     return true;
   }
 
-  /** Writes a replicated value to the entity's state. Client-set values are validated by the server. */
+  /** Writes replicated entity state, requesting server validation for clients in strict mode. */
   public async setr(key: string, value: unknown) {
     return this.set(key, value, 1);
   }
@@ -76,12 +83,13 @@ export abstract class GameEntity {
     return this.#handle;
   }
 
+  /** Updates the script handle, network id, and state bag used by this wrapper. */
   protected setHandle(handle: number) {
     const isPlayer = this.type === 'Player';
-    const playerId = isPlayer && ((this as any).playerId as number);
+    const playerId = isPlayer ? ((this as any).playerId as number) : 0;
     this.#handle = handle;
     // @ts-expect-error
-    this.netId = playerId ? (isServer ? playerId : GetPlayerServerId(playerId)) : NetworkGetNetworkIdFromEntity(handle);
+    this.netId = isPlayer ? (isServer ? playerId : GetPlayerServerId(playerId)) : NetworkGetNetworkIdFromEntity(handle);
     this.statebag = this.netId ? `${isPlayer ? 'player' : 'entity'}:${this.netId}` : `localEntity:${handle}`;
 
     if (!this.netId || (isServer && !isPlayer)) {
@@ -89,30 +97,37 @@ export abstract class GameEntity {
     }
   }
 
+  /** Returns the entity's world coordinates. */
   public getCoords() {
     return Vector3.fromArray(GetEntityCoords(this.handle));
   }
 
+  /** Moves the entity to world coordinates with the supplied placement flags. */
   public setCoords(x: number, y: number, z: number, deadFlag = false, ragdollFlag = false, clearArea = false) {
     SetEntityCoords(this.handle, x, y, z, true, deadFlag, ragdollFlag, clearArea);
   }
 
+  /** Returns the entity's model hash. */
   public getModel() {
     return GetEntityModel(this.handle);
   }
 
+  /** Returns the entity's heading in degrees. */
   public getHeading() {
     return GetEntityHeading(this.handle);
   }
 
+  /** Sets the entity's heading in degrees. */
   public setHeading(heading: number) {
     SetEntityHeading(this.handle, heading);
   }
 
+  /** Returns the server routing bucket or its client state bag value, defaulting to zero. */
   public getRoutingBucket() {
     return isServer ? GetEntityRoutingBucket(this.handle) : (this.get('bucket') ?? 0);
   }
 
+  /** Sets and replicates the entity's routing bucket on the server. */
   public setRoutingBucket(bucket: number) {
     if (!isServer) return;
 

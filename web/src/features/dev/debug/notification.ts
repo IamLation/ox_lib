@@ -1,19 +1,19 @@
-import { NotificationProps } from '../../../typings';
-import { debugData } from '../../../utils/debugData';
+import { NotificationProps } from "../../../typings";
+import { debugData } from "../../../utils/debugData";
 
 export const debugCustomNotification = () => {
   debugData<NotificationProps>([
     {
-      action: 'notify',
+      action: "notify",
       data: {
-        title: 'Success',
-        description: 'Notification description',
-        type: 'success',
-        id: 'pogchamp',
+        title: "Success",
+        description: "Notification description",
+        type: "success",
+        id: "pogchamp",
         duration: 20000,
         style: {
-          '.description': {
-            color: 'red',
+          ".description": {
+            color: "red",
           },
         },
       },
@@ -21,23 +21,23 @@ export const debugCustomNotification = () => {
   ]);
   debugData<NotificationProps>([
     {
-      action: 'notify',
+      action: "notify",
       data: {
-        title: 'Error',
-        description: 'Notification description',
-        type: 'error',
-        position: "bottom"
+        title: "Error",
+        description: "Notification description",
+        type: "error",
+        position: "bottom",
       },
     },
   ]);
   debugData<NotificationProps>([
     {
-      action: 'notify',
+      action: "notify",
       data: {
-        title: 'Custom icon success',
-        description: 'Notification description',
-        type: 'success',
-        icon: 'microchip',
+        title: "Custom icon success",
+        description: "Notification description",
+        type: "success",
+        icon: "microchip",
         showDuration: false,
       },
     },

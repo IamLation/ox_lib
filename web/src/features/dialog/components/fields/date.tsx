@@ -1,8 +1,8 @@
-import { IDateInput } from '../../../../typings/dialog';
-import { Control, useController } from 'react-hook-form';
-import { FormValues } from '../../InputDialog';
-import { DatePicker, DateRangePicker } from '@mantine/dates';
-import LibIcon from '../../../../components/LibIcon';
+import { IDateInput } from "../../../../typings/dialog";
+import { Control, useController } from "react-hook-form";
+import { FormValues } from "../../InputDialog";
+import { DatePicker, DateRangePicker } from "@mantine/dates";
+import LibIcon from "../../../../components/LibIcon";
 
 interface Props {
   row: IDateInput;
@@ -19,7 +19,7 @@ const DateField: React.FC<Props> = (props) => {
 
   return (
     <>
-      {props.row.type === 'date' && (
+      {props.row.type === "date" && (
         <DatePicker
           value={controller.field.value ? new Date(controller.field.value) : controller.field.value}
           name={controller.field.name}
@@ -39,7 +39,7 @@ const DateField: React.FC<Props> = (props) => {
           maxDate={props.row.max ? new Date(props.row.max) : undefined}
         />
       )}
-      {props.row.type === 'date-range' && (
+      {props.row.type === "date-range" && (
         <DateRangePicker
           value={
             controller.field.value
