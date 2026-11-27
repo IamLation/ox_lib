@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
-import { useNuiEvent } from '../../hooks/useNuiEvent';
-import Indicator from './indicator';
-import { fetchNui } from '../../utils/fetchNui';
-import { Box, createStyles } from '@mantine/core';
-import type { GameDifficulty, SkillCheckProps } from '../../typings';
+import { useRef, useState } from "react";
+import { useNuiEvent } from "../../hooks/useNuiEvent";
+import Indicator from "./indicator";
+import { fetchNui } from "../../utils/fetchNui";
+import { Box, createStyles } from "@mantine/core";
+import type { GameDifficulty, SkillCheckProps } from "../../typings";
 
 export const circleCircumference = 2 * 50 * Math.PI;
 
@@ -17,30 +17,30 @@ const difficultyOffsets = {
 
 const useStyles = createStyles((theme, params: { difficultyOffset: number }) => ({
   svg: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
     r: 50,
     width: 500,
     height: 500,
   },
   track: {
-    fill: 'transparent',
+    fill: "transparent",
     stroke: theme.colors.dark[5],
     strokeWidth: 8,
     r: 50,
     cx: 250,
     cy: 250,
     strokeDasharray: circleCircumference,
-    '@media (min-height: 1440px)': {
+    "@media (min-height: 1440px)": {
       strokeWidth: 10,
       r: 65,
       strokeDasharray: 2 * 65 * Math.PI,
     },
   },
   skillArea: {
-    fill: 'transparent',
+    fill: "transparent",
     stroke: theme.fn.primaryColor(),
     strokeWidth: 8,
     r: 50,
@@ -48,7 +48,7 @@ const useStyles = createStyles((theme, params: { difficultyOffset: number }) => 
     cy: 250,
     strokeDasharray: circleCircumference,
     strokeDashoffset: circleCircumference - (Math.PI * 50 * params.difficultyOffset) / 180,
-    '@media (min-height: 1440px)': {
+    "@media (min-height: 1440px)": {
       strokeWidth: 10,
       r: 65,
       strokeDasharray: 2 * 65 * Math.PI,
@@ -56,15 +56,15 @@ const useStyles = createStyles((theme, params: { difficultyOffset: number }) => 
     },
   },
   indicator: {
-    stroke: 'red',
+    stroke: "red",
     strokeWidth: 16,
-    fill: 'transparent',
+    fill: "transparent",
     r: 50,
     cx: 250,
     cy: 250,
     strokeDasharray: circleCircumference,
     strokeDashoffset: circleCircumference - 3,
-    '@media (min-height: 1440px)': {
+    "@media (min-height: 1440px)": {
       strokeWidth: 18,
       r: 65,
       strokeDasharray: 2 * 65 * Math.PI,
@@ -72,21 +72,21 @@ const useStyles = createStyles((theme, params: { difficultyOffset: number }) => 
     },
   },
   button: {
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    transform: "translate(-50%, -50%)",
     backgroundColor: theme.colors.dark[5],
     width: 25,
     height: 25,
-    textAlign: 'center',
+    textAlign: "center",
     borderRadius: 5,
     fontSize: 16,
     fontWeight: 500,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    '@media (min-height: 1440px)': {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    "@media (min-height: 1440px)": {
       width: 30,
       height: 30,
       fontSize: 22,
@@ -101,17 +101,17 @@ const SkillCheck: React.FC = () => {
   const [skillCheck, setSkillCheck] = useState<SkillCheckProps>({
     angle: 0,
     difficultyOffset: 50,
-    difficulty: 'easy',
-    key: 'e',
+    difficulty: "easy",
+    key: "e",
   });
   const { classes } = useStyles({ difficultyOffset: skillCheck.difficultyOffset });
 
-  useNuiEvent('startSkillCheck', (data: { difficulty: GameDifficulty | GameDifficulty[]; inputs?: string[] }) => {
+  useNuiEvent("startSkillCheck", (data: { difficulty: GameDifficulty | GameDifficulty[]; inputs?: string[] }) => {
     dataRef.current = data;
     dataIndexRef.current = 0;
     const gameData = Array.isArray(data.difficulty) ? data.difficulty[0] : data.difficulty;
-    const offset = typeof gameData === 'object' ? gameData.areaSize : difficultyOffsets[gameData];
-    const randomKey = data.inputs ? data.inputs[Math.floor(Math.random() * data.inputs.length)] : 'e';
+    const offset = typeof gameData === "object" ? gameData.areaSize : difficultyOffsets[gameData];
+    const randomKey = data.inputs ? data.inputs[Math.floor(Math.random() * data.inputs.length)] : "e";
     setSkillCheck({
       angle: -90 + getRandomAngle(120, 360 - offset),
       difficultyOffset: offset,
@@ -123,29 +123,29 @@ const SkillCheck: React.FC = () => {
     setVisible(true);
   });
 
-  useNuiEvent('skillCheckCancel', () => {
+  useNuiEvent("skillCheckCancel", () => {
     setVisible(false);
-    fetchNui('skillCheckOver', false);
+    fetchNui("skillCheckOver", false);
   });
 
   const handleComplete = (success: boolean) => {
     if (!dataRef.current) return;
     if (!success || !Array.isArray(dataRef.current.difficulty)) {
       setVisible(false);
-      return fetchNui('skillCheckOver', success);
+      return fetchNui("skillCheckOver", success);
     }
 
     if (dataIndexRef.current >= dataRef.current.difficulty.length - 1) {
       setVisible(false);
-      return fetchNui('skillCheckOver', success);
+      return fetchNui("skillCheckOver", success);
     }
 
     dataIndexRef.current++;
     const data = dataRef.current.difficulty[dataIndexRef.current];
     const key = dataRef.current.inputs
       ? dataRef.current.inputs[Math.floor(Math.random() * dataRef.current.inputs.length)]
-      : 'e';
-    const offset = typeof data === 'object' ? data.areaSize : difficultyOffsets[data];
+      : "e";
+    const offset = typeof data === "object" ? data.areaSize : difficultyOffsets[data];
     setSkillCheck((prev) => ({
       ...prev,
       angle: -90 + getRandomAngle(120, 360 - offset),
@@ -168,13 +168,13 @@ const SkillCheck: React.FC = () => {
               angle={skillCheck.angle}
               offset={skillCheck.difficultyOffset}
               multiplier={
-                skillCheck.difficulty === 'easy'
+                skillCheck.difficulty === "easy"
                   ? 1
-                  : skillCheck.difficulty === 'medium'
-                  ? 1.5
-                  : skillCheck.difficulty === 'hard'
-                  ? 1.75
-                  : skillCheck.difficulty.speedMultiplier
+                  : skillCheck.difficulty === "medium"
+                    ? 1.5
+                    : skillCheck.difficulty === "hard"
+                      ? 1.75
+                      : skillCheck.difficulty.speedMultiplier
               }
               handleComplete={handleComplete}
               className={classes.indicator}

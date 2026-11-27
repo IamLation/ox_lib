@@ -10,6 +10,8 @@
 
 local Ped = require 'Ox.Game.Ped'
 local isServer = lib.context == 'server'
+local User = isServer and require 'Ox.User' or nil
+local Character = isServer and require 'Ox.Character' or nil
 
 ---@class Player : Ped
 ---@field handle number The player ped's script handle.
@@ -33,36 +35,82 @@ local function triggerStateChangeHandlers(bag, key, value)
     if not bag:find('^player:') then return end
 
     local playerId = GetPlayerFromStateBagName(bag)
-    local handlers = playerId ~= 0 and stateChangeHandlers[key]
+
+    if (isServer and playerId <= 0) or (not isServer and playerId < 0) then return end
+
+    local serverId = isServer and playerId or GetPlayerServerId(playerId)
+
+    if serverId <= 0 or bag ~= ('player:%s'):format(serverId) then return end
+
+    local handlers = stateChangeHandlers[key]
 
     if not handlers then return end
 
-    local player = players[playerId]
+    local player = players[serverId]
+    local old = GetStateBagValue(bag, key)
+    local subscriptions = table.clone(handlers.subscriptions)
 
-    for i = 1, #handlers do
-        local handler = handlers[i]
-        handler.cb(player, key, value, GetStateBagValue(bag, key))
+    for i = 1, #subscriptions do
+        local subscription = subscriptions[i]
+
+        if subscription.active then
+            subscription.cb(player, key, value, old)
+        end
     end
+end
+
+---Returns a cached player instance or creates a new one.
+---@param netId number
+---@return Player
+function Player.fromId(netId)
+    if netId == -1 then netId = isServer and tonumber(GetPlayerFromIndex(0)) or cache.serverId end
+
+    return players[netId]
 end
 
 ---@param key string
 ---@param handler fun(player: Player, key: string, value?: unknown, old?: unknown)
+---@return fun() unsubscribe
+---Registers a player state callback and returns a function that unsubscribes it.
 function Player.on(key, handler)
     local handlers = stateChangeHandlers[key]
 
     if not handlers then
-        handlers = lib.array:new()
+        handlers = {
+            cookie = AddStateBagChangeHandler(key, '', triggerStateChangeHandlers),
+            subscriptions = {},
+        }
         stateChangeHandlers[key] = handlers
     end
 
-    handlers:push({
-        cb = handler,
-        cookie = AddStateBagChangeHandler(key, '', triggerStateChangeHandlers),
-    })
+    local subscription = { cb = handler, active = true }
+    local subscriptions = handlers.subscriptions
+
+    subscriptions[#subscriptions + 1] = subscription
+
+    return function()
+        if not subscription.active then return end
+
+        subscription.active = false
+
+        for i = 1, #subscriptions do
+            if subscriptions[i] == subscription then
+                table.remove(subscriptions, i)
+                break
+            end
+        end
+
+        if #subscriptions > 0 then return end
+
+        RemoveStateBagChangeHandler(handlers.cookie)
+        stateChangeHandlers[key] = nil
+    end
 end
 
 ---@class PlayerConstructor
 ---@overload fun(self: Player, netId: number): Player
+---@private
+---@see Player.fromId
 function Player:constructor(netId)
     if netId == -1 then netId = isServer and tonumber(GetPlayerFromIndex(0)) or cache.serverId end
 
@@ -79,6 +127,16 @@ function Player:__index(index)
     end
 
     return Player[index]
+end
+
+---Returns a remote class proxy for the player's user.
+function Player:getUser()
+    return User?.fromId(self:get('userId'))
+end
+
+---Returns a remote class proxy for the player's current character.
+function Player:getCharacter()
+    return Character?.fromId(self:get('charId'))
 end
 
 ---@param model string | number
@@ -101,7 +159,7 @@ function Player:setRoutingBucket(bucket)
 end
 
 if not isServer then
-    Player.Local = Player:new(-1)
+    Player.Local = Player.fromId(-1)
 end
 
 return Player
